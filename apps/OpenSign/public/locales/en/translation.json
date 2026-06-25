@@ -100,7 +100,7 @@
       "Manage templates": "Manage templates",
       "Embedding": "Embedding"
     },
-    "OpenSign™ Drive": "{{appName}} Drive",
+    "OpenSign™ Drive": "ClientDemo Sign Drive",
     "Reports": "Reports",
     "Documents": "Documents",
     "Documents-Children": {
@@ -1570,6 +1570,6 @@
   "attachments-invalid-type": "Unsupported file type: {{name}}",
   "attachments-max-files": "A maximum of {{maxFiles}} attachments are allowed.",
   "attachments-remove-confirm": "Removing only deletes the metadata. Pages already appended will remain in the document. Continue?",
-  "attachement-note":"Note: This widget allows signers to upload a file during the signing process. The uploaded file will be appended as additional pages at the end of the existing PDF",
-  "attachments-docx-not-supported":"We are currently experiencing an issue with DOCX file uploads. Please try uploading the document in a different supported format, or try again later."
+  "attachement-note": "Note: This widget allows signers to upload a file during the signing process. The uploaded file will be appended as additional pages at the end of the existing PDF",
+  "attachments-docx-not-supported": "We are currently experiencing an issue with DOCX file uploads. Please try uploading the document in a different supported format, or try again later."
 }

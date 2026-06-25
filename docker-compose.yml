@@ -39,9 +39,6 @@ services:
     container_name: caddy-container
     ports:
       - "3001:3001"
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data

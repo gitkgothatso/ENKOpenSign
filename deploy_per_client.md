@@ -204,6 +204,9 @@ dig +short sign.acme-corp.com
 ## Step 8 — Build and Start
 
 ```bash
+# Write frontend env so REACT_APP_APPID is baked into the build
+echo "REACT_APP_APPID=<APP_ID>" > apps/OpenSign/.env
+
 # Build the frontend for this client
 cd apps/OpenSign && npm install --engine-strict=false && npm run build && cd ../..
 

@@ -259,6 +259,9 @@ Restore ports 80 and 443 to Caddy in `docker-compose.yml` (they were removed for
 
 Build and start:
 ```bash
+# Write the frontend env file so REACT_APP_APPID is baked into the build
+echo "REACT_APP_APPID=<APP_ID>" > apps/OpenSign/.env
+
 cd apps/OpenSign && npm install --engine-strict=false && npm run build && cd ../..
 HOST_URL=https://sign.acme-corp.com docker compose up --build -d
 docker compose ps   # all 5 containers should be Up

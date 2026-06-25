@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 48" width="240" height="48">
+  <!-- Icon: pen nib in a square -->
+  <rect x="2" y="2" width="44" height="44" rx="8" fill="#0A2342"/>
+  <path d="M14 34 L22 14 L30 26 L26 30 Z" fill="#F5A623"/>
+  <path d="M14 34 L18 30 L26 30 L14 34 Z" fill="#FFFFFF" opacity="0.6"/>
+  <line x1="14" y1="36" x2="34" y2="36" stroke="#F5A623" stroke-width="2" stroke-linecap="round"/>
+  <!-- Brand name -->
+  <text x="56" y="20" font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="700" fill="#0A2342" letter-spacing="0.3">ClientDemo</text>
+  <text x="56" y="38" font-family="'Segoe UI', Arial, sans-serif" font-size="13" font-weight="400" fill="#F5A623" letter-spacing="1.5">SIGN</text>
+</svg>

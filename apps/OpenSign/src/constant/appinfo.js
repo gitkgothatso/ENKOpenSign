@@ -1,4 +1,4 @@
-import logo from "../assets/images/logo.png";
+import logo from "../assets/images/clientdemo-logo.svg";
 import { getEnv } from "./Utils";
 
 export function serverUrl_fn() {

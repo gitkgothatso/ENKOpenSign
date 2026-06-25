@@ -95,3 +95,4 @@ Key variables:
 | `local_dev_setup.md` | Full local environment setup from scratch |
 | `deploy_per_client.md` | Server provisioning, domain, TLS, and deployment steps per client |
 | `client_customize_guide.md` | Every customisation point (branding, colours, email templates, env vars) with a per-client checklist |
+| `client_cloud_aws_deploy.md` | Step-by-step AWS deployment using EC2 + S3 + SES (af-south-1, DevAdmin credentials) |

@@ -130,6 +130,19 @@ Each client gets their own `.env.prod` — never committed to git. The table bel
 | `MAILGUN_API_KEY` / `MAILGUN_DOMAIN` | Alternative to SMTP | _(client's)_ |
 | `PFX_BASE64` / `PASS_PHRASE` | PDF signing certificate | _(client's p12, base64-encoded)_ |
 
+### AWS-specific values (when deploying on EC2 + S3 + SES)
+
+| Variable | AWS value |
+|---|---|
+| `USE_LOCAL` | `false` |
+| `DO_ENDPOINT` | `s3.af-south-1.amazonaws.com` |
+| `DO_BASEURL` | `https://<bucket>.s3.af-south-1.amazonaws.com` |
+| `DO_REGION` | `af-south-1` |
+| `SMTP_HOST` | `email-smtp.af-south-1.amazonaws.com` |
+| `SMTP_PORT` | `587` |
+
+See **`client_cloud_aws_deploy.md`** for full provisioning steps including S3 bucket creation, IAM user setup, and SES domain verification.
+
 ---
 
 ## 6. Suggested Further Customisations

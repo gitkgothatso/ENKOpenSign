@@ -38,17 +38,17 @@ git push -u origin client/acme-corp
 
 ## Step 2 — Customise for the Client
 
-Make any branding or feature changes on this branch before deploying.
+Make branding and feature changes on this branch before deploying. See **`client_customize_guide.md`** for a full table of every customisation point and a per-client checklist. Key areas:
 
 | Customisation | File(s) |
 |---|---|
-| Logo | `apps/OpenSign/src/assets/images/` |
-| App name in emails | `appName` in `.env.prod` (per-client, not in code) |
-| Brand colours | `apps/OpenSign/tailwind.config.js` |
-| Email subject/body templates | `apps/OpenSignServer/cloud/parsefunction/sendMailv3.js` |
-| Email footer / onboarding layout | `apps/OpenSign/src/components/emailbuilder/` |
-| Dashboard widgets | `apps/OpenSign/src/components/dashboard/` |
-| Signing widget behaviour | `apps/OpenSign/src/components/pdf/` |
+| App name (UI, emails) | `src/pages/Login.jsx`, `Title.jsx`, `Footer.jsx`, `BulkSendUi.jsx`, `AgreementContent.jsx`, `SubMenu.jsx` |
+| Email sender name | `apps/OpenSignServer/Utils.js` or `APP_NAME` in `.env.prod` |
+| Logo + favicon | `apps/OpenSign/src/assets/images/` + `public/favicon.svg` |
+| Brand colours | `apps/OpenSign/tailwind.config.js` → `opensigncss` theme |
+| Email HTML templates | `apps/OpenSignServer/files/*.html` and `*_subject.txt` |
+| Sidebar Drive label | `apps/OpenSign/public/locales/en/translation.json` |
+| Social media links | `apps/OpenSign/src/components/SocialMedia.jsx` |
 
 Rebuild and test locally (`local_dev_setup.md`) before deploying to the client.
 

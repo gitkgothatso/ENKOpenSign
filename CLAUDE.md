@@ -83,3 +83,12 @@ Key variables:
 - `MASTER_KEY` — Parse Server master key; required for admin dashboard access
 - `MONGODB_URI` — MongoDB connection string
 - `USE_LOCAL=true` — use local filesystem instead of S3
+- `APP_NAME` — email sender display name (e.g. `Acme Corp Sign`)
+
+## Documentation
+
+| File | Purpose |
+|---|---|
+| `local_dev_setup.md` | Full local environment setup from scratch |
+| `deploy_per_client.md` | Server provisioning, domain, TLS, and deployment steps per client |
+| `client_customize_guide.md` | Every customisation point (branding, colours, email templates, env vars) with a per-client checklist |

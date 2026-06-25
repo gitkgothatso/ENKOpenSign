@@ -56,6 +56,8 @@ Rebuild and test locally (`local_dev_setup.md`) before deploying to the client.
 
 ## Step 3 — Provision the Server
 
+> **Deploying on AWS?** See **`client_cloud_aws_deploy.md`** for a step-by-step guide using EC2, S3, and SES with the pre-configured `DevAdmin` credentials (af-south-1). It includes exact CLI commands, IAM setup, SES sandbox notes, and a teardown checklist.
+
 ### Recommended server specs
 
 | Clients/users | Minimum spec |

@@ -55,11 +55,11 @@ SERVER_URL=http://server:8080/app
 # Storage — local filesystem (no S3 needed for dev)
 USE_LOCAL=true
 
-# Email — disabled for local dev (no SMTP server needed)
-SMTP_ENABLE=false
-SMTP_HOST=
-SMTP_PORT=
-SMTP_USER_EMAIL=
+# Email — MailDev catches all outgoing emails locally (no real SMTP needed)
+SMTP_ENABLE=true
+SMTP_HOST=maildev
+SMTP_PORT=1025
+SMTP_USER_EMAIL=noreply@opensign.local
 SMTP_PASS=
 MAILGUN_API_KEY=
 MAILGUN_DOMAIN=mail.yourdomain.com
@@ -102,7 +102,7 @@ This produces the production bundle in `apps/OpenSign/build/`. It also fetches t
 HOST_URL=https://localhost:3001 docker compose up --force-recreate -d
 ```
 
-This starts 4 Docker containers:
+This starts 5 Docker containers:
 
 | Container | Role | Exposed port |
 |---|---|---|
@@ -110,6 +110,7 @@ This starts 4 Docker containers:
 | `OpenSignServer-container` | Parse Server API | internal only (via Caddy) |
 | `OpenSign-container` | React frontend | `3000` |
 | `caddy-container` | Reverse proxy + TLS | `3001` |
+| `maildev-container` | Email catcher (local only) | `1025` (SMTP), `1080` (web UI) |
 
 > **Why `HOST_URL` must include `https://`:** The docker-compose.yml builds `SERVER_URL` as `${HOST_URL}/api/app`. Parse Server requires this URL to start with `https://`. Omitting the scheme causes the server container to exit immediately.
 
@@ -119,11 +120,17 @@ Access the app at: **https://localhost:3001**
 
 Accept the self-signed certificate warning in the browser (Caddy generates one for `localhost` automatically).
 
+**MailDev web UI** — view all outgoing emails at: **http://localhost:1080**
+
+No emails leave the machine. MailDev intercepts everything the server sends (password resets, verification emails, signing notifications) and displays them in its inbox.
+
 ---
 
 ## Creating the First Account
 
-Email sending is disabled in local dev, so the standard UI sign-up flow (which sends a verification email) will appear to hang. Instead, create the first account via the Parse Cloud Function directly:
+With MailDev running, you can use the sign-up form in the UI at https://localhost:3001. Any verification email will be caught by MailDev at http://localhost:1080.
+
+Alternatively, create an account directly via the Parse Cloud Function (skips email verification entirely):
 
 ```bash
 curl -s -X POST https://localhost:3001/api/app/functions/usersignup \
@@ -189,7 +196,7 @@ docker logs OpenSignServer-container
 
 | Error message | Fix |
 |---|---|
-| `Please provide valid SMTP credentials` | Set `SMTP_ENABLE=false` in `.env.prod` |
+| `Please provide valid SMTP credentials` | Ensure `SMTP_HOST=maildev` and `SMTP_PORT=1025` are set; `SMTP_PASS` must be empty (not a placeholder) |
 | `publicServerURL should be a valid HTTPS URL` | Run with `HOST_URL=https://localhost:3001` (include `https://`) |
 | MongoDB connection errors | Ensure `mongo-container` is running: `docker ps` |
 
@@ -207,7 +214,7 @@ ss -tlnp | grep :3001
 ### Stale containers from a previous run
 
 ```bash
-docker rm -f mongo-container caddy-container OpenSign-container OpenSignServer-container
+docker rm -f mongo-container caddy-container OpenSign-container OpenSignServer-container maildev-container
 docker compose up --force-recreate -d
 ```
 

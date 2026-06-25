@@ -34,6 +34,14 @@ services:
       - "3000:3000"
     networks:
       - app-network
+  maildev:
+    image: maildev/maildev:latest
+    container_name: maildev-container
+    ports:
+      - "1080:1080"   # web UI
+      - "1025:1025"   # SMTP
+    networks:
+      - app-network
   caddy:
     image: caddy:latest
     container_name: caddy-container

@@ -1,15 +1,40 @@
 <html>
-
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
-
-<body style="text-align: center;">
-    <p style="font-weight: bolder; font-size: large;">Hello!</p>
-    <p>This is a notice regarding your account:</p>
-    <p>{{username}}</p>
-    <br />
-    <p>{{appName}}</p>
+<body style="margin:0;padding:0;background-color:#F0F4F8;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F0F4F8;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#0A2342;padding:28px 40px;">
+              <span style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:0.5px;">ClientDemo</span>
+              <span style="color:#F5A623;font-size:14px;font-weight:600;letter-spacing:2px;margin-left:4px;">SIGN</span>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px;">
+              <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:#0A2342;">Account Notice</p>
+              <p style="margin:0 0 16px;font-size:14px;color:#666;">Hi <strong>{{username}}</strong>,</p>
+              <p style="margin:0 0 24px;font-size:15px;color:#444;line-height:1.6;">
+                This is a notice regarding your {{appName}} account.
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#F0F4F8;padding:20px 40px;border-top:1px solid #E0E8F4;">
+              <p style="margin:0;font-size:12px;color:#999;text-align:center;">
+                &copy; {{appName}} &nbsp;|&nbsp; This is an automated message, please do not reply.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
-
 </html>

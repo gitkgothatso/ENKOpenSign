@@ -1,6 +1,8 @@
 services:
   server:
-    image: opensign/opensignserver:main
+    build:
+      context: ./apps/OpenSignServer
+      dockerfile: Dockerfile.local
     container_name: OpenSignServer-container
     volumes:
       - opensign-files:/usr/src/app/files

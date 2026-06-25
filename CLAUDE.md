@@ -71,7 +71,10 @@ docker compose up -d # Run all services (server, mongo, client, caddy)
 | `server` | 8080 | OpenSignServer (Parse Server) |
 | `mongo` | 27018→27017 | MongoDB |
 | `client` | 3000 | OpenSign frontend |
-| `caddy` | 3001, 80, 443 | Reverse proxy (TLS termination) |
+| `caddy` | 3001 | Reverse proxy + TLS (ports 80/443 removed locally to avoid host conflicts) |
+| `maildev` | 1025 (SMTP), 1080 (UI) | Email catcher for local dev — all outgoing email lands here |
+
+On client branches, `server` and `client` build from `apps/OpenSignServer/Dockerfile.local` and `apps/OpenSign/Dockerfile.local` respectively instead of pulling Hub images, so local code changes are served correctly.
 
 ## Environment Setup
 

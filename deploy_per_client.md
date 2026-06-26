@@ -147,13 +147,14 @@ MAILGUN_SENDER=noreply@acme-corp.com
 # SMTP_USER_EMAIL=noreply@acme-corp.com
 
 # ── PDF signing certificate ──────────────────────────────────
-# Replace with a real certificate for production.
-# To generate a self-signed one:
-#   openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 3650 -nodes
-#   openssl pkcs12 -export -out cert.p12 -inkey key.pem -in cert.pem -passout pass:yourpass
-#   base64 -w 0 cert.p12
-PFX_BASE64=<base64-encoded-p12-or-pfx>
-PASS_PHRASE=<certificate-passphrase>
+# REQUIRED — leaving this as a placeholder causes "something went wrong" on sign completion.
+# Generate a self-signed cert (valid for 10 years) and paste the output as PFX_BASE64:
+#   openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 3650 -nodes \
+#     -subj "/CN=<ClientName> Sign/O=ENKOpenSign/C=ZA"
+#   openssl pkcs12 -export -out cert.p12 -inkey key.pem -in cert.pem -passout pass:<yourpass>
+#   base64 -w 0 cert.p12   # paste the output below
+PFX_BASE64=<run the commands above and paste the base64 output here>
+PASS_PHRASE=<yourpass>      # must match the -passout value above
 ```
 
 ### Generate a strong MASTER_KEY

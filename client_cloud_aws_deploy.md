@@ -235,16 +235,24 @@ DO_SECRET_ACCESS_KEY=<iam-secret-key>
 DO_REGION=af-south-1
 
 # Email (SES — see Step 9)
+# NOTE: af-south-1 has no SES SMTP endpoint. Use a region where SES SMTP is available.
+# Verified working: eu-west-1 (Ireland). Verify sender identity in that same region.
 SMTP_ENABLE=true
-SMTP_HOST=email-smtp.af-south-1.amazonaws.com
+SMTP_HOST=email-smtp.eu-west-1.amazonaws.com
 SMTP_PORT=587
 SMTP_USERNAME=<ses-smtp-username>
-SMTP_PASS=<ses-smtp-password>
+SMTP_PASS=<ses-smtp-password>        # derived from IAM key, NOT the raw secret key
 SMTP_USER_EMAIL=noreply@acme-corp.com
 
 # PDF signing certificate
-PFX_BASE64=<base64-encoded-p12>
-PASS_PHRASE=<passphrase>
+# REQUIRED — leaving this blank causes "something went wrong" on signing completion.
+# Generate on the server:
+#   openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 3650 -nodes \
+#     -subj "/CN=<ClientName> Sign/O=ENKOpenSign/C=ZA" 2>/dev/null
+#   openssl pkcs12 -export -out cert.p12 -inkey key.pem -in cert.pem -passout pass:<yourpass> 2>/dev/null
+#   base64 -w 0 cert.p12   # paste output as PFX_BASE64
+PFX_BASE64=<base64 output from commands above>
+PASS_PHRASE=<yourpass>
 EOF
 ```
 

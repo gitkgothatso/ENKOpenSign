@@ -371,6 +371,58 @@ curl -s -X POST https://sign.acme-corp.com/api/app/functions/usersignup \
 
 ---
 
+## Step 11 — Bootstrap Organisation and Team
+
+> **This step is required.** Without it, Settings → Users throws "Something went wrong" and adding users fails with "Permission denied".
+
+SSH into the instance (or use SSM) and run:
+
+```bash
+APP_ID=acmecorp
+MASTER_KEY=<your-master-key>
+HOST=http://localhost:8080/app
+
+# 1. Get the admin's TenantId and contracts_Users objectId
+curl -sG "$HOST/classes/contracts_Users" \
+  --data-urlencode 'where={"Email":"admin@acme-corp.com"}' \
+  -H "X-Parse-Application-Id: $APP_ID" \
+  -H "X-Parse-Master-Key: $MASTER_KEY"
+```
+
+Note the `TenantId.objectId` and top-level `objectId` from the response, then:
+
+```bash
+TENANT_ID=<TenantId.objectId from above>
+EXT_USER_ID=<objectId from above>
+
+# 2. Create the Organisation
+ORG_ID=$(curl -s -X POST "$HOST/classes/contracts_Organizations" \
+  -H "X-Parse-Application-Id: $APP_ID" \
+  -H "X-Parse-Master-Key: $MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"Name\":\"Acme Corp\",\"TenantId\":{\"__type\":\"Pointer\",\"className\":\"partners_Tenant\",\"objectId\":\"$TENANT_ID\"}}" \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['objectId'])")
+echo "Org ID: $ORG_ID"
+
+# 3. Link the admin to the Organisation
+curl -s -X PUT "$HOST/classes/contracts_Users/$EXT_USER_ID" \
+  -H "X-Parse-Application-Id: $APP_ID" \
+  -H "X-Parse-Master-Key: $MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"OrganizationId\":{\"__type\":\"Pointer\",\"className\":\"contracts_Organizations\",\"objectId\":\"$ORG_ID\"}}"
+
+# 4. Create the default Team
+curl -s -X POST "$HOST/classes/contracts_Teams" \
+  -H "X-Parse-Application-Id: $APP_ID" \
+  -H "X-Parse-Master-Key: $MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"Name\":\"All Users\",\"OrganizationId\":{\"__type\":\"Pointer\",\"className\":\"contracts_Organizations\",\"objectId\":\"$ORG_ID\"},\"TenantId\":{\"__type\":\"Pointer\",\"className\":\"partners_Tenant\",\"objectId\":\"$TENANT_ID\"}}"
+```
+
+Log out and back in after completing this step.
+
+---
+
 ## Backups
 
 ### Automated MongoDB backup to S3

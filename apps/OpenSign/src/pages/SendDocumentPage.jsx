@@ -77,7 +77,7 @@ const SendDocumentPage = () => {
 
   const handlePageClick = (e) => {
     if (signers.length === 0) {
-      showAlert("danger", t("add-signer-first") || "Add a signer first");
+      showAlert("danger", t("add-signer-first", { defaultValue: "Add a signer first" }));
       return;
     }
     const rect = pageRef.current.getBoundingClientRect();
@@ -106,11 +106,11 @@ const SendDocumentPage = () => {
 
   const handleSend = async () => {
     if (signers.length === 0) {
-      showAlert("danger", t("add-signer-first") || "Add at least one signer");
+      showAlert("danger", t("add-signer-first", { defaultValue: "Add at least one signer" }));
       return;
     }
     if (fields.length === 0) {
-      showAlert("danger", t("place-field-first") || "Place at least one field");
+      showAlert("danger", t("place-field-first", { defaultValue: "Place at least one field" }));
       return;
     }
     setSending(true);
@@ -132,7 +132,7 @@ const SendDocumentPage = () => {
       }));
       const missingFieldsStep = steps.find((s) => s.fields.length === 0);
       if (missingFieldsStep) {
-        showAlert("danger", t("every-signer-needs-field") || "Every signer needs at least one field");
+        showAlert("danger", t("every-signer-needs-field", { defaultValue: "Every signer needs at least one field" }));
         setSending(false);
         return;
       }
@@ -143,7 +143,7 @@ const SendDocumentPage = () => {
         message,
         steps
       });
-      showAlert("success", t("document-sent-alert") || "Document sent for signature");
+      showAlert("success", t("document-sent-alert", { defaultValue: "Document sent for signature" }));
       setTimeout(() => navigate(`/documents`), 1200);
       return res;
     } catch (err) {
@@ -173,7 +173,7 @@ const SendDocumentPage = () => {
         <h2 className="text-lg font-semibold mb-2">{doc?.title}</h2>
 
         <div className="mb-4">
-          <label className="block text-xs font-semibold mb-1">{t("message") || "Message"}</label>
+          <label className="block text-xs font-semibold mb-1">{t("message", { defaultValue: "Message" })}</label>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -183,7 +183,7 @@ const SendDocumentPage = () => {
         </div>
 
         <div className="mb-4">
-          <label className="block text-xs font-semibold mb-1">{t("signers") || "Signers"}</label>
+          <label className="block text-xs font-semibold mb-1">{t("signers", { defaultValue: "Signers" })}</label>
           {signers.map((s, index) => (
             <div
               key={index}
@@ -207,7 +207,7 @@ const SendDocumentPage = () => {
           <form onSubmit={handleAddSigner} className="flex flex-col gap-1 mt-2">
             <input
               type="text"
-              placeholder={t("name") || "Name"}
+              placeholder={t("name", { defaultValue: "Name" })}
               value={signerForm.name}
               onChange={(e) => setSignerForm((f) => ({ ...f, name: e.target.value }))}
               className="op-input op-input-bordered op-input-sm text-xs"
@@ -215,21 +215,21 @@ const SendDocumentPage = () => {
             />
             <input
               type="email"
-              placeholder={t("email") || "Email"}
+              placeholder={t("email", { defaultValue: "Email" })}
               value={signerForm.email}
               onChange={(e) => setSignerForm((f) => ({ ...f, email: e.target.value?.toLowerCase()?.replace(/\s/g, "") }))}
               className="op-input op-input-bordered op-input-sm text-xs"
               required
             />
             <button type="submit" className="op-btn op-btn-sm op-btn-secondary">
-              <i className="fa-light fa-plus mr-1" /> {t("add-signer") || "Add signer"}
+              <i className="fa-light fa-plus mr-1" /> {t("add-signer", { defaultValue: "Add signer" })}
             </button>
           </form>
         </div>
 
         <div className="mb-4">
           <label className="block text-xs font-semibold mb-1">
-            {t("field-type") || "Field type"} ({t("placing-for") || "placing for"}{" "}
+            {t("field-type", { defaultValue: "Field type" })} ({t("placing-for", { defaultValue: "placing for" })}{" "}
             {signers[activeSignerIndex]?.name || "-"})
           </label>
           <div className="flex flex-wrap gap-1">
@@ -244,12 +244,12 @@ const SendDocumentPage = () => {
             ))}
           </div>
           <p className="text-[11px] text-gray-500 mt-1">
-            {t("click-doc-to-place") || "Click on the document to place this field"}
+            {t("click-doc-to-place", { defaultValue: "Click on the document to place this field" })}
           </p>
         </div>
 
         <div className="mb-4">
-          <label className="block text-xs font-semibold mb-1">{t("placed-fields") || "Placed fields"}</label>
+          <label className="block text-xs font-semibold mb-1">{t("placed-fields", { defaultValue: "Placed fields" })}</label>
           <div className="max-h-[150px] overflow-y-auto">
             {fields.map((f, index) => (
               <div key={index} className="flex justify-between items-center text-xs px-2 py-1 bg-base-200 rounded mb-1">
@@ -263,7 +263,7 @@ const SendDocumentPage = () => {
         </div>
 
         <button className="op-btn op-btn-primary w-full" disabled={sending} onClick={handleSend}>
-          {sending ? t("loading") : t("send") || "Send for signature"}
+          {sending ? t("loading") : t("send", { defaultValue: "Send for signature" })}
         </button>
       </div>
 

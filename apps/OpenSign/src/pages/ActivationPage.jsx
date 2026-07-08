@@ -36,21 +36,23 @@ const ActivationPage = () => {
         {status === "success" ? (
           <>
             <h1 className="text-xl font-semibold text-green-600 mb-2">
-              {t("account-activated") || "Account activated"}
+              {t("account-activated", { defaultValue: "Account activated" })}
             </h1>
             <p className="text-sm text-gray-500 mb-4">
-              {t("account-activated-mssg") ||
-                "Your account has been activated. You can now log in."}
+              {t("account-activated-mssg", {
+                defaultValue: "Your account has been activated. You can now log in."
+              })}
             </p>
           </>
         ) : (
           <>
             <h1 className="text-xl font-semibold text-red-600 mb-2">
-              {t("activation-failed") || "Activation failed"}
+              {t("activation-failed", { defaultValue: "Activation failed" })}
             </h1>
             <p className="text-sm text-gray-500 mb-4">
-              {t("activation-failed-mssg") ||
-                "This activation link is invalid or has expired."}
+              {t("activation-failed-mssg", {
+                defaultValue: "This activation link is invalid or has expired."
+              })}
             </p>
           </>
         )}

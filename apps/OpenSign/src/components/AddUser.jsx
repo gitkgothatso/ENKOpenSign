@@ -27,7 +27,7 @@ const AddUser = (props) => {
       if (props.closePopup) props.closePopup();
       if (props.onInvited) props.onInvited();
       setEmail("");
-      props.showAlert("success", t("invitation-sent") || "Invitation sent");
+      props.showAlert("success", t("invitation-sent", { defaultValue: "Invitation sent" }));
     } catch (err) {
       console.error("err", err);
       props.showAlert("danger", err.message || t("something-went-wrong-mssg"));

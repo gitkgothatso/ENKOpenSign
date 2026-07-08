@@ -90,7 +90,7 @@ function UserProfile() {
                 editmode ? "py-1.5" : "py-2"
               }`}
             >
-              <span className="font-semibold">{t("last-name") || "Last name"}:</span>{" "}
+              <span className="font-semibold">{t("last-name", { defaultValue: "Last name" })}:</span>{" "}
               {editmode ? (
                 <input
                   type="text"

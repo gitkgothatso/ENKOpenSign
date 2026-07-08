@@ -75,7 +75,7 @@ const ManageSignatures = () => {
     try {
       await uploadSavedSignature(userId, { file, type: uploadType, makeDefault: signatures.length === 0 });
       setFile(null);
-      showAlert("success", t("uploaded") || "Signature saved");
+      showAlert("success", t("uploaded", { defaultValue: "Signature saved" }));
       fetchSignatures(userId);
     } catch (err) {
       showAlert("danger", err.message || t("something-went-wrong-mssg"));
@@ -119,11 +119,11 @@ const ManageSignatures = () => {
   return (
     <div className="p-2 w-full bg-base-100 text-base-content op-card shadow-lg relative">
       {alert.msg && <Alert type={alert.type}>{alert.msg}</Alert>}
-      <div className="font-light text-[20px] md:text-[23px] my-2 mx-3">{t("my-signature") || "My Signature"}</div>
+      <div className="font-light text-[20px] md:text-[23px] my-2 mx-3">{t("my-signature", { defaultValue: "My Signature" })}</div>
 
       <form onSubmit={handleUpload} className="mx-3 mb-4 flex flex-col md:flex-row gap-2 items-start md:items-end">
         <div>
-          <label className="block text-xs font-semibold mb-1">{t("type") || "Type"}</label>
+          <label className="block text-xs font-semibold mb-1">{t("type", { defaultValue: "Type" })}</label>
           <select
             value={uploadType}
             onChange={(e) => setUploadType(e.target.value)}
@@ -137,7 +137,7 @@ const ManageSignatures = () => {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-semibold mb-1">{t("file") || "Image"}</label>
+          <label className="block text-xs font-semibold mb-1">{t("file", { defaultValue: "Image" })}</label>
           <input
             type="file"
             accept="image/*"
@@ -146,7 +146,7 @@ const ManageSignatures = () => {
           />
         </div>
         <button type="submit" className="op-btn op-btn-primary op-btn-sm" disabled={!file || uploading}>
-          {uploading ? t("loading") : t("upload") || "Upload"}
+          {uploading ? t("loading") : t("upload", { defaultValue: "Upload" })}
         </button>
       </form>
 
@@ -163,14 +163,14 @@ const ManageSignatures = () => {
               ) : (
                 <div className="h-[60px] flex items-center justify-center text-xs text-gray-500">{sig.type}</div>
               )}
-              <div className="text-[11px]">{sig.isDefault ? t("default") || "Default" : sig.type}</div>
+              <div className="text-[11px]">{sig.isDefault ? t("default", { defaultValue: "Default" }) : sig.type}</div>
               {rowLoading[sig.id] ? (
                 <span className="op-loading op-loading-spinner op-loading-sm" />
               ) : (
                 <div className="flex gap-1">
                   {!sig.isDefault && (
                     <button className="op-btn op-btn-xs op-btn-secondary" onClick={() => handleMakeDefault(sig)}>
-                      {t("make-default") || "Make default"}
+                      {t("make-default", { defaultValue: "Make default" })}
                     </button>
                   )}
                   <button className="op-btn op-btn-xs op-btn-ghost text-red-600" onClick={() => handleDelete(sig)}>

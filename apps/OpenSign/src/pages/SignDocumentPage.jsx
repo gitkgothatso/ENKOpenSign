@@ -94,8 +94,8 @@ const SignDocumentPage = () => {
     return (
       <div className="w-full h-[400px] flex flex-col justify-center items-center gap-2">
         <i className="fa-light fa-circle-check text-5xl text-green-600" />
-        <p className="text-lg font-semibold">{t("document-signed") || "Document signed"}</p>
-        <p className="text-sm text-gray-500">{t("thank-you") || "Thank you!"}</p>
+        <p className="text-lg font-semibold">{t("document-signed", { defaultValue: "Document signed" })}</p>
+        <p className="text-sm text-gray-500">{t("thank-you", { defaultValue: "Thank you!" })}</p>
       </div>
     );
   }
@@ -105,7 +105,7 @@ const SignDocumentPage = () => {
       <div className="w-full h-[400px] flex flex-col justify-center items-center gap-2">
         <i className="fa-light fa-circle-xmark text-5xl text-red-600" />
         <p className="text-lg font-semibold">
-          {request.status === "REJECTED" ? t("document-declined") || "Document declined" : t("document-cancelled") || "Document cancelled"}
+          {request.status === "REJECTED" ? t("document-declined", { defaultValue: "Document declined" }) : t("document-cancelled", { defaultValue: "Document cancelled" })}
         </p>
       </div>
     );
@@ -153,7 +153,7 @@ const SignDocumentPage = () => {
     try {
       await rejectRequest(requestId, token, { signerId: myStep.signerId, reason: rejectReason });
       setRejectOpen(false);
-      showAlert("success", t("record-revoke-alert") || "Document declined");
+      showAlert("success", t("record-revoke-alert", { defaultValue: "Document declined" }));
       setTimeout(() => navigate(isAuthenticated() ? "/documents" : "/"), 1500);
     } catch (err) {
       showAlert("danger", err.message || t("something-went-wrong-mssg"));
@@ -168,24 +168,24 @@ const SignDocumentPage = () => {
       <div className="w-full md:w-[280px] bg-base-100 text-base-content op-card shadow-lg p-3">
         <h2 className="text-lg font-semibold mb-1">{docTitle}</h2>
         <p className="text-xs text-gray-500 mb-3">
-          {t("signing-as") || "Signing as"} {myStep.signerName} ({myStep.signerEmail})
+          {t("signing-as", { defaultValue: "Signing as" })} {myStep.signerName} ({myStep.signerEmail})
         </p>
 
         {hasSignatureField && (
           <div className="mb-3">
             <button className="op-btn op-btn-sm op-btn-secondary w-full" onClick={() => setSignatureModalOpen(true)}>
               <i className="fa-light fa-signature mr-1" />
-              {signatureData ? t("edit-signature") || "Edit signature" : t("add-signature") || "Add your signature"}
+              {signatureData ? t("edit-signature", { defaultValue: "Edit signature" }) : t("add-signature", { defaultValue: "Add your signature" })}
             </button>
             {signatureData && <p className="text-xs mt-1 italic">"{signatureData}"</p>}
           </div>
         )}
 
         <button className="op-btn op-btn-primary w-full mb-2" disabled={!canSubmit || submitting} onClick={handleSubmit}>
-          {submitting ? t("loading") : t("complete-signing") || "Complete signing"}
+          {submitting ? t("loading") : t("complete-signing", { defaultValue: "Complete signing" })}
         </button>
         <button className="op-btn op-btn-ghost w-full text-red-600" onClick={() => setRejectOpen(true)}>
-          {t("decline") || "Decline to sign"}
+          {t("decline", { defaultValue: "Decline to sign" })}
         </button>
       </div>
 
@@ -210,7 +210,7 @@ const SignDocumentPage = () => {
                       style={style}
                       onClick={() => handleFieldClick(fieldIndex, f.fieldType)}
                     >
-                      {signatureData || t("click-to-sign") || "Click to sign"}
+                      {signatureData || t("click-to-sign", { defaultValue: "Click to sign" })}
                     </div>
                   );
                 }
@@ -270,9 +270,9 @@ const SignDocumentPage = () => {
         )}
       </div>
 
-      <ModalUi isOpen={signatureModalOpen} title={t("add-signature") || "Add your signature"} handleClose={() => setSignatureModalOpen(false)}>
+      <ModalUi isOpen={signatureModalOpen} title={t("add-signature", { defaultValue: "Add your signature" })} handleClose={() => setSignatureModalOpen(false)}>
         <div className="px-4 py-3">
-          <label className="block text-xs font-semibold mb-1">{t("type-your-name") || "Type your name"}</label>
+          <label className="block text-xs font-semibold mb-1">{t("type-your-name", { defaultValue: "Type your name" })}</label>
           <input
             type="text"
             value={typedSignature}
@@ -281,14 +281,14 @@ const SignDocumentPage = () => {
             style={{ fontFamily: "cursive", fontSize: "18px" }}
           />
           <button className="op-btn op-btn-primary w-full mt-3" onClick={handleSaveSignature} disabled={!typedSignature}>
-            {t("save") || "Save"}
+            {t("save", { defaultValue: "Save" })}
           </button>
         </div>
       </ModalUi>
 
-      <ModalUi isOpen={rejectOpen} title={t("decline") || "Decline to sign"} handleClose={() => setRejectOpen(false)}>
+      <ModalUi isOpen={rejectOpen} title={t("decline", { defaultValue: "Decline to sign" })} handleClose={() => setRejectOpen(false)}>
         <div className="px-4 py-3">
-          <label className="block text-xs font-semibold mb-1">{t("reason") || "Reason"}</label>
+          <label className="block text-xs font-semibold mb-1">{t("reason", { defaultValue: "Reason" })}</label>
           <textarea
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
@@ -296,7 +296,7 @@ const SignDocumentPage = () => {
             rows={3}
           />
           <button className="op-btn op-btn-primary w-full mt-3" onClick={handleReject} disabled={!rejectReason || submitting}>
-            {t("submit") || "Submit"}
+            {t("submit", { defaultValue: "Submit" })}
           </button>
         </div>
       </ModalUi>

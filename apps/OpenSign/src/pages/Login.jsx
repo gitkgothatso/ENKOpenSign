@@ -170,7 +170,7 @@ function Login() {
                         to="/addadmin"
                         className="text-[13px] op-link op-link-primary underline-offset-1 focus:outline-none ml-1"
                       >
-                        {t("create-account") || "Create account"}
+                        {t("create-account", { defaultValue: "Create account" })}
                       </NavLink>
                     </div>
                   </div>

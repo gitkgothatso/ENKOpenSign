@@ -50,7 +50,7 @@ const Preferences = () => {
     setSaving(true);
     try {
       await updatePreferences(userId, { dateFormat, timezone, defaultSignatureId: defaultSignatureId || undefined });
-      showAlert("success", t("preferences-updated") || "Preferences updated");
+      showAlert("success", t("preferences-updated", { defaultValue: "Preferences updated" }));
     } catch (err) {
       showAlert("danger", err.message || t("something-went-wrong-mssg"));
     } finally {
@@ -69,7 +69,7 @@ const Preferences = () => {
   return (
     <div className="p-2 w-full bg-base-100 text-base-content op-card shadow-lg">
       {alert.msg && <Alert type={alert.type}>{alert.msg}</Alert>}
-      <div className="font-light text-[20px] md:text-[23px] my-2 mx-3">{t("preferences") || "Preferences"}</div>
+      <div className="font-light text-[20px] md:text-[23px] my-2 mx-3">{t("preferences", { defaultValue: "Preferences" })}</div>
 
       <div className="mx-3 flex flex-col gap-4 mb-4">
         <TimezoneSelector timezone={timezone} setTimezone={setTimezone} />
@@ -77,17 +77,17 @@ const Preferences = () => {
 
         <div className="max-w-[400px]">
           <label className="text-[14px] mb-[0.7rem] font-medium block">
-            {t("default-signature") || "Default signature"}
+            {t("default-signature", { defaultValue: "Default signature" })}
           </label>
           <select
             value={defaultSignatureId}
             onChange={(e) => setDefaultSignatureId(e.target.value)}
             className="op-select op-select-bordered op-select-sm w-full text-xs"
           >
-            <option value="">{t("none") || "None"}</option>
+            <option value="">{t("none", { defaultValue: "None" })}</option>
             {savedSignatures.map((sig) => (
               <option key={sig.id} value={sig.id}>
-                {sig.type} {sig.isDefault ? `(${t("default") || "default"})` : ""}
+                {sig.type} {sig.isDefault ? `(${t("default", { defaultValue: "default" })})` : ""}
               </option>
             ))}
           </select>
@@ -96,7 +96,7 @@ const Preferences = () => {
 
       <div className="mx-3 mb-4">
         <button className="op-btn op-btn-primary" disabled={saving} onClick={handleSave}>
-          {saving ? t("loading") : t("save") || "Save"}
+          {saving ? t("loading") : t("save", { defaultValue: "Save" })}
         </button>
       </div>
     </div>

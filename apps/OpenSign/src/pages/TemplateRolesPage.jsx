@@ -68,7 +68,7 @@ const DefineRolesView = ({ template, userId, userEmail, fileBlob, onRolesDefined
     }));
     const missing = roleDtos.find((r) => r.fields.length === 0);
     if (missing) {
-      showAlert("danger", t("every-role-needs-field") || "Every role needs at least one field");
+      showAlert("danger", t("every-role-needs-field", { defaultValue: "Every role needs at least one field" }));
       return;
     }
     setSaving(true);
@@ -90,11 +90,11 @@ const DefineRolesView = ({ template, userId, userEmail, fileBlob, onRolesDefined
       <div className="w-full md:w-[300px] bg-base-100 text-base-content op-card shadow-lg p-3">
         <h2 className="text-lg font-semibold mb-2">{template.title}</h2>
         <p className="text-xs text-gray-500 mb-3">
-          {t("define-roles-help") || "Define abstract roles (e.g. Signer 1, Approver) and place their fields. You'll bind real people to these roles when you send."}
+          {t("define-roles-help", { defaultValue: "Define abstract roles (e.g. Signer 1, Approver) and place their fields. You'll bind real people to these roles when you send." })}
         </p>
 
         <div className="mb-4">
-          <label className="block text-xs font-semibold mb-1">{t("roles") || "Roles"}</label>
+          <label className="block text-xs font-semibold mb-1">{t("roles", { defaultValue: "Roles" })}</label>
           {roles.map((role, index) => (
             <div
               key={index}
@@ -122,13 +122,13 @@ const DefineRolesView = ({ template, userId, userEmail, fileBlob, onRolesDefined
             </div>
           ))}
           <button className="op-btn op-btn-sm op-btn-secondary mt-1" onClick={handleAddRole}>
-            <i className="fa-light fa-plus mr-1" /> {t("add-role") || "Add role"}
+            <i className="fa-light fa-plus mr-1" /> {t("add-role", { defaultValue: "Add role" })}
           </button>
         </div>
 
         <div className="mb-4">
           <label className="block text-xs font-semibold mb-1">
-            {t("field-type") || "Field type"} ({t("placing-for") || "placing for"} {roles[activeRoleIndex]?.roleName})
+            {t("field-type", { defaultValue: "Field type" })} ({t("placing-for", { defaultValue: "placing for" })} {roles[activeRoleIndex]?.roleName})
           </label>
           <div className="flex flex-wrap gap-1">
             {FIELD_TYPES.map((ft) => (
@@ -141,11 +141,11 @@ const DefineRolesView = ({ template, userId, userEmail, fileBlob, onRolesDefined
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-gray-500 mt-1">{t("click-doc-to-place") || "Click on the document to place this field"}</p>
+          <p className="text-[11px] text-gray-500 mt-1">{t("click-doc-to-place", { defaultValue: "Click on the document to place this field" })}</p>
         </div>
 
         <div className="mb-4">
-          <label className="block text-xs font-semibold mb-1">{t("placed-fields") || "Placed fields"}</label>
+          <label className="block text-xs font-semibold mb-1">{t("placed-fields", { defaultValue: "Placed fields" })}</label>
           <div className="max-h-[150px] overflow-y-auto">
             {fields.map((f, index) => (
               <div key={index} className="flex justify-between items-center text-xs px-2 py-1 bg-base-200 rounded mb-1">
@@ -159,7 +159,7 @@ const DefineRolesView = ({ template, userId, userEmail, fileBlob, onRolesDefined
         </div>
 
         <button className="op-btn op-btn-primary w-full" disabled={saving} onClick={handleSaveRoles}>
-          {saving ? t("loading") : t("save-roles") || "Save roles"}
+          {saving ? t("loading") : t("save-roles", { defaultValue: "Save roles" })}
         </button>
       </div>
 
@@ -226,7 +226,7 @@ const SendFromTemplateView = ({ template, userId, userEmail }) => {
     setSending(true);
     try {
       await sendTemplate(template.id, { requesterId: userId, requesterEmail: userEmail, message, roleBindings: bindings });
-      showAlert("success", t("document-sent-alert") || "Document sent for signature");
+      showAlert("success", t("document-sent-alert", { defaultValue: "Document sent for signature" }));
       setTimeout(() => navigate("/documents"), 1200);
     } catch (err) {
       showAlert("danger", err.message || t("something-went-wrong-mssg"));
@@ -241,7 +241,7 @@ const SendFromTemplateView = ({ template, userId, userEmail }) => {
       <h2 className="text-lg font-semibold mb-3">{template.title}</h2>
 
       <div className="mb-4">
-        <label className="block text-xs font-semibold mb-1">{t("message") || "Message"}</label>
+        <label className="block text-xs font-semibold mb-1">{t("message", { defaultValue: "Message" })}</label>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -255,14 +255,14 @@ const SendFromTemplateView = ({ template, userId, userEmail }) => {
           <div className="text-xs font-semibold mb-1">{binding.roleName}</div>
           <input
             type="text"
-            placeholder={t("name") || "Name"}
+            placeholder={t("name", { defaultValue: "Name" })}
             value={binding.signerName}
             onChange={(e) => handleBindingChange(index, "signerName", e.target.value)}
             className="op-input op-input-bordered op-input-sm w-full text-xs mb-1"
           />
           <input
             type="email"
-            placeholder={t("email") || "Email"}
+            placeholder={t("email", { defaultValue: "Email" })}
             value={binding.signerEmail}
             onChange={(e) => handleBindingChange(index, "signerEmail", e.target.value?.toLowerCase()?.replace(/\s/g, ""))}
             className="op-input op-input-bordered op-input-sm w-full text-xs"
@@ -271,7 +271,7 @@ const SendFromTemplateView = ({ template, userId, userEmail }) => {
       ))}
 
       <button className="op-btn op-btn-primary w-full" disabled={sending} onClick={handleSend}>
-        {sending ? t("loading") : t("send") || "Send for signature"}
+        {sending ? t("loading") : t("send", { defaultValue: "Send for signature" })}
       </button>
     </div>
   );

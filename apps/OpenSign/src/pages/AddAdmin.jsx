@@ -98,7 +98,7 @@ const AddAdmin = () => {
                 />
                 <hr className="my-2 border-none" />
                 <label>
-                  {t("last-name") || "Last name"}{" "}
+                  {t("last-name", { defaultValue: "Last name" })}{" "}
                   <span className="text-[red] text-[13px]">*</span>
                 </label>
                 <input

@@ -83,10 +83,10 @@ const ContactsList = () => {
     try {
       if (editingId) {
         await updateContact(editingId, userId, form);
-        showAlert("success", t("record-updated") || "Contact updated");
+        showAlert("success", t("record-updated", { defaultValue: "Contact updated" }));
       } else {
         await createContact({ ownerId: userId, ...form });
-        showAlert("success", t("contact-created") || "Contact created");
+        showAlert("success", t("contact-created", { defaultValue: "Contact created" }));
       }
       setFormOpen(false);
       fetchContacts(userId, search);
@@ -103,7 +103,7 @@ const ContactsList = () => {
     setRowLoading((prev) => ({ ...prev, [contact.id]: true }));
     try {
       await deleteContact(contact.id, userId);
-      showAlert("success", t("record-delete-alert") || "Contact deleted");
+      showAlert("success", t("record-delete-alert", { defaultValue: "Contact deleted" }));
       fetchContacts(userId, search);
     } catch (err) {
       showAlert("danger", err.message || t("something-went-wrong-mssg"));
@@ -121,9 +121,9 @@ const ContactsList = () => {
       <div className="p-2 w-full bg-base-100 text-base-content op-card shadow-lg">
         {alert.msg && <Alert type={alert.type}>{alert.msg}</Alert>}
         <div className="flex flex-row items-center justify-between my-2 mx-3 text-[20px] md:text-[23px]">
-          <div className="font-light">{t("report-name.Contacts") || "Contacts"}</div>
+          <div className="font-light">{t("report-name.Contacts", { defaultValue: "Contacts" })}</div>
           <button className="op-btn op-btn-primary op-btn-sm" onClick={openCreateForm}>
-            <i className="fa-light fa-user-plus mr-1" /> {t("add") || "Add"}
+            <i className="fa-light fa-user-plus mr-1" /> {t("add", { defaultValue: "Add" })}
           </button>
         </div>
 
@@ -132,11 +132,11 @@ const ContactsList = () => {
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("search") || "Search contacts"}
+            placeholder={t("search", { defaultValue: "Search contacts" })}
             className="op-input op-input-bordered op-input-sm w-64 text-xs"
           />
           <button type="submit" className="op-btn op-btn-sm op-btn-secondary">
-            {t("search") || "Search"}
+            {t("search", { defaultValue: "Search" })}
           </button>
         </form>
 
@@ -149,10 +149,10 @@ const ContactsList = () => {
             <table className="op-table border-collapse w-full mb-4">
               <thead className="text-[14px]">
                 <tr className="border-y-[1px]">
-                  <th className="p-2">{t("report-heading.Sr.No") || "#"}</th>
-                  <th className="p-2">{t("name") || "Name"}</th>
-                  <th className="p-2">{t("email") || "Email"}</th>
-                  <th className="p-2">{t("phone") || "Phone"}</th>
+                  <th className="p-2">{t("report-heading.Sr.No", { defaultValue: "#" })}</th>
+                  <th className="p-2">{t("name", { defaultValue: "Name" })}</th>
+                  <th className="p-2">{t("email", { defaultValue: "Email" })}</th>
+                  <th className="p-2">{t("phone", { defaultValue: "Phone" })}</th>
                   <th className="p-2 text-transparent pointer-events-none">{t("action")}</th>
                 </tr>
               </thead>
@@ -171,14 +171,14 @@ const ContactsList = () => {
                           <>
                             <button
                               className="op-btn op-btn-sm op-btn-ghost"
-                              title={t("edit") || "Edit"}
+                              title={t("edit", { defaultValue: "Edit" })}
                               onClick={() => openEditForm(contact)}
                             >
                               <i className="fa-light fa-pen" />
                             </button>
                             <button
                               className="op-btn op-btn-sm op-btn-ghost text-red-600"
-                              title={t("delete") || "Delete"}
+                              title={t("delete", { defaultValue: "Delete" })}
                               onClick={() => setDeleteTarget(contact)}
                             >
                               <i className="fa-light fa-trash" />
@@ -201,10 +201,10 @@ const ContactsList = () => {
         )}
       </div>
 
-      <ModalUi isOpen={!!deleteTarget} title={t("delete") || "Delete contact"} handleClose={() => setDeleteTarget(null)}>
+      <ModalUi isOpen={!!deleteTarget} title={t("delete", { defaultValue: "Delete contact" })} handleClose={() => setDeleteTarget(null)}>
         <div className="m-[20px]">
           <div className="text-lg font-normal text-base-content">
-            {t("delete-document-alert") || "Are you sure you want to delete this?"}
+            {t("delete-document-alert", { defaultValue: "Are you sure you want to delete this?" })}
           </div>
           <hr className="bg-[#ccc] mt-4" />
           <div className="flex items-center mt-3 gap-2 text-white">
@@ -220,13 +220,13 @@ const ContactsList = () => {
 
       <ModalUi
         isOpen={formOpen}
-        title={editingId ? t("edit") || "Edit contact" : t("add") || "Add contact"}
+        title={editingId ? t("edit", { defaultValue: "Edit contact" }) : t("add", { defaultValue: "Add contact" })}
         handleClose={() => setFormOpen(false)}
         isLoader={saving}
       >
         <form onSubmit={handleFormSubmit} className="px-4 py-3">
           <div className="mb-3">
-            <label className="block text-xs font-semibold mb-1">{t("name") || "Name"}</label>
+            <label className="block text-xs font-semibold mb-1">{t("name", { defaultValue: "Name" })}</label>
             <input
               type="text"
               required
@@ -236,7 +236,7 @@ const ContactsList = () => {
             />
           </div>
           <div className="mb-3">
-            <label className="block text-xs font-semibold mb-1">{t("email") || "Email"}</label>
+            <label className="block text-xs font-semibold mb-1">{t("email", { defaultValue: "Email" })}</label>
             <input
               type="email"
               required
@@ -246,7 +246,7 @@ const ContactsList = () => {
             />
           </div>
           <div className="mb-3">
-            <label className="block text-xs font-semibold mb-1">{t("phone") || "Phone"}</label>
+            <label className="block text-xs font-semibold mb-1">{t("phone", { defaultValue: "Phone" })}</label>
             <input
               type="text"
               value={form.phone}
@@ -255,7 +255,7 @@ const ContactsList = () => {
             />
           </div>
           <button type="submit" className="op-btn op-btn-primary w-full">
-            {t("submit") || "Save"}
+            {t("submit", { defaultValue: "Save" })}
           </button>
         </form>
       </ModalUi>

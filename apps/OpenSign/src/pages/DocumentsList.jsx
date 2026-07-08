@@ -140,7 +140,7 @@ const DocumentsList = () => {
     withRowLoading(doc.id, async () => {
       try {
         await duplicateDocument(doc.id, userId);
-        showAlert("success", t("document-duplicated") || "Document duplicated");
+        showAlert("success", t("document-duplicated", { defaultValue: "Document duplicated" }));
         fetchDocuments(userId, page, status, search);
       } catch (err) {
         showAlert("danger", err.message || t("something-went-wrong-mssg"));
@@ -153,7 +153,7 @@ const DocumentsList = () => {
     await withRowLoading(doc.id, async () => {
       try {
         await deleteDocument(doc.id, userId);
-        showAlert("success", t("record-delete-alert") || "Document deleted");
+        showAlert("success", t("record-delete-alert", { defaultValue: "Document deleted" }));
         fetchDocuments(userId, page, status, search);
       } catch (err) {
         showAlert("danger", err.message || t("something-went-wrong-mssg"));
@@ -174,7 +174,7 @@ const DocumentsList = () => {
       });
       setUploadOpen(false);
       setUploadForm({ file: null, title: "", description: "", classification: "CONFIDENTIAL" });
-      showAlert("success", t("document-uploaded") || "Document uploaded");
+      showAlert("success", t("document-uploaded", { defaultValue: "Document uploaded" }));
       fetchDocuments(userId, 0, status, search);
       setPage(0);
     } catch (err) {
@@ -189,12 +189,12 @@ const DocumentsList = () => {
       <div className="p-2 w-full bg-base-100 text-base-content op-card shadow-lg">
         {alert.msg && <Alert type={alert.type}>{alert.msg}</Alert>}
         <div className="flex flex-row items-center justify-between my-2 mx-3 text-[20px] md:text-[23px]">
-          <div className="font-light">{t("report-name.Documents") || "Documents"}</div>
+          <div className="font-light">{t("report-name.Documents", { defaultValue: "Documents" })}</div>
           <button
             className="op-btn op-btn-primary op-btn-sm"
             onClick={() => setUploadOpen(true)}
           >
-            <i className="fa-light fa-upload mr-1" /> {t("upload") || "Upload"}
+            <i className="fa-light fa-upload mr-1" /> {t("upload", { defaultValue: "Upload" })}
           </button>
         </div>
 
@@ -215,11 +215,11 @@ const DocumentsList = () => {
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("search-documents") || "Search documents"}
+            placeholder={t("search-documents", { defaultValue: "Search documents" })}
             className="op-input op-input-bordered op-input-sm w-64 text-xs"
           />
           <button type="submit" className="op-btn op-btn-sm op-btn-secondary">
-            {t("search") || "Search"}
+            {t("search", { defaultValue: "Search" })}
           </button>
         </form>
 
@@ -233,10 +233,10 @@ const DocumentsList = () => {
               <table className="op-table border-collapse w-full mb-4">
                 <thead className="text-[14px]">
                   <tr className="border-y-[1px]">
-                    <th className="p-2">{t("report-heading.Sr.No") || "#"}</th>
-                    <th className="p-2">{t("report-heading.Name") || "Title"}</th>
-                    <th className="p-2">{t("report-heading.Status") || "Status"}</th>
-                    <th className="p-2">{t("expiry-date") || "Expires"}</th>
+                    <th className="p-2">{t("report-heading.Sr.No", { defaultValue: "#" })}</th>
+                    <th className="p-2">{t("report-heading.Name", { defaultValue: "Title" })}</th>
+                    <th className="p-2">{t("report-heading.Status", { defaultValue: "Status" })}</th>
+                    <th className="p-2">{t("expiry-date", { defaultValue: "Expires" })}</th>
                     <th className="p-2 text-transparent pointer-events-none">{t("action")}</th>
                   </tr>
                 </thead>
@@ -256,7 +256,7 @@ const DocumentsList = () => {
                               {doc.status === "DRAFT" && (
                                 <button
                                   className="op-btn op-btn-sm op-btn-primary"
-                                  title={t("send") || "Send for signature"}
+                                  title={t("send", { defaultValue: "Send for signature" })}
                                   onClick={() => navigate(`/documents/${doc.id}/signature-workflow`)}
                                 >
                                   <i className="fa-light fa-paper-plane" />
@@ -264,21 +264,21 @@ const DocumentsList = () => {
                               )}
                               <button
                                 className="op-btn op-btn-sm op-btn-ghost"
-                                title={t("download") || "Download"}
+                                title={t("download", { defaultValue: "Download" })}
                                 onClick={() => handleDownload(doc)}
                               >
                                 <i className="fa-light fa-download" />
                               </button>
                               <button
                                 className="op-btn op-btn-sm op-btn-ghost"
-                                title={t("btnLabel.duplicate") || "Duplicate"}
+                                title={t("btnLabel.duplicate", { defaultValue: "Duplicate" })}
                                 onClick={() => handleDuplicate(doc)}
                               >
                                 <i className="fa-light fa-copy" />
                               </button>
                               <button
                                 className="op-btn op-btn-sm op-btn-ghost text-red-600"
-                                title={t("delete") || "Delete"}
+                                title={t("delete", { defaultValue: "Delete" })}
                                 onClick={() => setDeleteTarget(doc)}
                               >
                                 <i className="fa-light fa-trash" />
@@ -340,13 +340,13 @@ const DocumentsList = () => {
 
       <ModalUi
         isOpen={uploadOpen}
-        title={t("upload") || "Upload document"}
+        title={t("upload", { defaultValue: "Upload document" })}
         handleClose={() => setUploadOpen(false)}
         isLoader={uploading}
       >
         <form onSubmit={handleUploadSubmit} className="px-4 py-3">
           <div className="mb-3">
-            <label className="block text-xs font-semibold mb-1">{t("file") || "File"}</label>
+            <label className="block text-xs font-semibold mb-1">{t("file", { defaultValue: "File" })}</label>
             <input
               type="file"
               accept="application/pdf"
@@ -356,7 +356,7 @@ const DocumentsList = () => {
             />
           </div>
           <div className="mb-3">
-            <label className="block text-xs font-semibold mb-1">{t("title") || "Title"}</label>
+            <label className="block text-xs font-semibold mb-1">{t("title", { defaultValue: "Title" })}</label>
             <input
               type="text"
               required
@@ -366,7 +366,7 @@ const DocumentsList = () => {
             />
           </div>
           <div className="mb-3">
-            <label className="block text-xs font-semibold mb-1">{t("description") || "Description"}</label>
+            <label className="block text-xs font-semibold mb-1">{t("description", { defaultValue: "Description" })}</label>
             <input
               type="text"
               value={uploadForm.description}
@@ -376,20 +376,20 @@ const DocumentsList = () => {
           </div>
           <div className="mb-3">
             <label className="block text-xs font-semibold mb-1">
-              {t("classification") || "Classification"}
+              {t("classification", { defaultValue: "Classification" })}
             </label>
             <select
               value={uploadForm.classification}
               onChange={(e) => setUploadForm((f) => ({ ...f, classification: e.target.value }))}
               className="op-select op-select-bordered op-select-sm w-full text-xs"
             >
-              <option value="CONFIDENTIAL">{t("confidential") || "Confidential (allows external/guest signers)"}</option>
-              <option value="PUBLIC">{t("public") || "Public (allows external/guest signers)"}</option>
-              <option value="INTERNAL">{t("internal") || "Internal (registered users only)"}</option>
+              <option value="CONFIDENTIAL">{t("confidential", { defaultValue: "Confidential (allows external/guest signers)" })}</option>
+              <option value="PUBLIC">{t("public", { defaultValue: "Public (allows external/guest signers)" })}</option>
+              <option value="INTERNAL">{t("internal", { defaultValue: "Internal (registered users only)" })}</option>
             </select>
           </div>
           <button type="submit" className="op-btn op-btn-primary w-full">
-            {t("upload") || "Upload"}
+            {t("upload", { defaultValue: "Upload" })}
           </button>
         </form>
       </ModalUi>

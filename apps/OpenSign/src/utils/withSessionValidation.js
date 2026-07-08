@@ -1,16 +1,11 @@
 import { sessionStatus } from "../redux/reducers/userReducer";
 import { store } from "../redux/store";
-import Parse from "parse";
+import { isAuthenticated } from "../api/session";
 
 export function withSessionValidation(fn) {
   return async (...args) => {
     try {
-      const tenantId = localStorage.getItem("TenantId");
-      const user =
-        typeof Parse !== "undefined" ? Parse.User?.current?.() : null;
-      const sessionToken = user?.getSessionToken?.();
-
-      if (!tenantId || !sessionToken) {
+      if (!isAuthenticated()) {
         store.dispatch(sessionStatus(false));
         throw new Error("invalid session token");
       }
@@ -18,7 +13,7 @@ export function withSessionValidation(fn) {
       return await fn(...args);
     } catch (error) {
       if (error?.message === "invalid session token") {
-        console.error("invalid session or missing tenantId", error);
+        console.error("invalid session", error);
         store.dispatch(sessionStatus(false));
         return;
       } else {

@@ -6,9 +6,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Sidebar from "../components/sidebar/Sidebar";
 import Tour from "../primitives/Tour";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import Parse from "parse";
 import {
   Outlet
 } from "react-router";
@@ -16,6 +14,7 @@ import Loader from "../primitives/Loader";
 import { useTranslation } from "react-i18next";
 import { sessionStatus } from "../redux/reducers/userReducer";
 import SessionExpiredModal from "../primitives/SessionExpiredModal";
+import { isAuthenticated } from "../api/session";
 
 const HomeLayout = () => {
   const appName =
@@ -30,7 +29,6 @@ const HomeLayout = () => {
   const [tourStatusArr, setTourStatusArr] = useState([]);
   const [tourConfigs, setTourConfigs] = useState([]);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const tenantId = localStorage.getItem("TenantId");
 
   useEffect(() => {
     const language = localStorage.getItem("i18nextLng");
@@ -40,35 +38,10 @@ const HomeLayout = () => {
   }, []);
 
   useEffect(() => {
-    if (localStorage.getItem("accesstoken")) {
-      if (!tenantId) {
-        dispatch(sessionStatus(false));
-      } else {
-        (async () => {
-          try {
-            // Use the session token to validate the user
-            const userQuery = new Parse.Query(Parse.User);
-            const user = await userQuery.get(Parse?.User?.current()?.id, {
-              sessionToken: localStorage.getItem("accesstoken")
-            });
-            if (user) {
-              localStorage.setItem("profileImg", user.get("ProfilePic") || "");
-                dispatch(sessionStatus(true));
-                setIsLoader(false);
-            } else {
-              dispatch(sessionStatus(true));
-            }
-          } catch (error) {
-            console.error("error in authentication:", error?.message);
-            // Session token is invalid or there was an error
-            dispatch(sessionStatus(false));
-          }
-        })();
-      }
-    }
-
+    dispatch(sessionStatus(isAuthenticated()));
+    setIsLoader(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantId]);
+  }, []);
 
 
   useEffect(() => {
@@ -131,48 +104,16 @@ const HomeLayout = () => {
   };
   const closeTour = async () => {
     setIsTour(false);
-    const serverUrl = localStorage.getItem("baseUrl");
-    const appId = localStorage.getItem("parseAppId");
-    const json = JSON.parse(localStorage.getItem("Extand_Class"));
-    const extUserId = json && json.length > 0 && json[0].objectId;
-
-    let updatedTourStatus = [];
-    if (tourStatusArr.length > 0) {
-      updatedTourStatus = [...tourStatusArr];
-      const loginTourIndex = tourStatusArr.findIndex(
-        (obj) => obj["loginTour"] === false || obj["loginTour"] === true
-      );
-      if (loginTourIndex !== -1) {
-        updatedTourStatus[loginTourIndex] = { loginTour: true };
-      } else {
-        updatedTourStatus.push({ loginTour: true });
-      }
-    } else {
-      updatedTourStatus = [{ loginTour: true }];
-    }
-
-    await axios.put(
-      serverUrl + "classes/contracts_Users/" + extUserId,
-      { TourStatus: updatedTourStatus },
-      { headers: { "X-Parse-Application-Id": appId } }
-    );
+    localStorage.setItem("loginTourSeen", "true");
   };
 
-  async function checkTourStatus() {
-    const cloudRes = await Parse.Cloud.run("getUserDetails");
-    if (cloudRes) {
-      const extUser = JSON.parse(JSON.stringify(cloudRes));
-      localStorage.setItem("Extand_Class", JSON.stringify([extUser]));
-      const tourStatus = extUser?.TourStatus || [];
-      setTourStatusArr(tourStatus);
-      const loginTour = tourStatus.find((obj) => obj.loginTour)?.loginTour;
-      setIsTour(!loginTour);
-    } else {
-      setIsTour(true);
-    }
+  function checkTourStatus() {
+    const loginTourSeen = localStorage.getItem("loginTourSeen") === "true";
+    setTourStatusArr(loginTourSeen ? [{ loginTour: true }] : []);
+    setIsTour(!loginTourSeen);
   }
 
-  return isValidSession && localStorage.getItem("accesstoken") ? (
+  return isValidSession && isAuthenticated() ? (
     <div className="flex flex-col h-screen overflow-hidden">
       {/* HEADER */}
       <header className="z-[501]">

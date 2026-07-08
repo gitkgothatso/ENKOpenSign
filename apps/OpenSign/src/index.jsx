@@ -5,17 +5,9 @@ import App from "./App";
 import { showUpgradeProgress, hideUpgradeProgress } from "./utils";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
-import Parse from "parse";
 import "./polyfills";
-import { serverUrl_fn } from "./constant/appinfo";
 import "./i18n";
 import { ScrollProvider } from "./context/ScrollPdfContext";
-
-const appId =
-  import.meta.env.VITE_APPID || process.env.REACT_APP_APPID || "opensign";
-const serverUrl = serverUrl_fn();
-Parse.initialize(appId);
-Parse.serverURL = serverUrl;
 
 if (localStorage.getItem("showUpgradeProgress")) {
   showUpgradeProgress();

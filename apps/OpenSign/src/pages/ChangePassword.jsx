@@ -1,7 +1,9 @@
 import { useState } from "react";
-import Parse from "parse";
 import { Navigate } from "react-router";
 import { useTranslation } from "react-i18next";
+import { changePassword as changePasswordRequest } from "../api/auth";
+import { getCurrentUser } from "../api/account";
+import { isAuthenticated } from "../api/session";
 
 function ChangePassword() {
   const { t } = useTranslation();
@@ -34,52 +36,30 @@ function ChangePassword() {
   };
   const handleSubmit = async (evt) => {
     evt.preventDefault();
+    if (newpassword !== confirmpassword) {
+      alert(t("password-update-alert-4"));
+      return;
+    }
+    if (!(lengthValid && caseDigitValid && specialCharValid)) {
+      return;
+    }
     try {
-      if (newpassword === confirmpassword) {
-        if (lengthValid && caseDigitValid && specialCharValid) {
-          Parse.User.logIn(localStorage.getItem("userEmail"), currentpassword)
-            .then(async (user) => {
-              if (user) {
-                const User = new Parse.User();
-                const query = new Parse.Query(User);
-                await query.get(user.id).then((user) => {
-                  // Updates the data we want
-                  user.set("password", newpassword);
-                  user
-                    .save()
-                    .then(async () => {
-                      let _user = user.toJSON();
-                      if (_user) {
-                        await Parse.User.become(_user.sessionToken);
-                        localStorage.setItem("accesstoken", _user.sessionToken);
-                      }
-                      setCurrentPassword("");
-                      setnewpassword("");
-                      setconfirmpassword("");
-                      alert(t("password-update-alert-1"));
-                    })
-                    .catch((error) => {
-                      console.log("err", error);
-                      alert(t("something-went-wrong-mssg"));
-                    });
-                });
-              } else {
-                alert(t("password-update-alert-2"));
-              }
-            })
-            .catch((error) => {
-              alert(t("password-update-alert-3"));
-              console.error("Error while logging in user", error);
-            });
-        }
-      } else {
-        alert(t("password-update-alert-4"));
-      }
+      const user = await getCurrentUser();
+      await changePasswordRequest({
+        userId: user.id,
+        currentPassword: currentpassword,
+        newPassword: newpassword
+      });
+      setCurrentPassword("");
+      setnewpassword("");
+      setconfirmpassword("");
+      alert(t("password-update-alert-1"));
     } catch (error) {
-      console.log("err", error);
+      console.error("Error while changing password", error);
+      alert(error.message || t("password-update-alert-3"));
     }
   };
-  if (localStorage.getItem("accesstoken") === null) {
+  if (!isAuthenticated()) {
     return <Navigate to="/" />;
   }
   return (

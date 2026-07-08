@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import login_img from "../assets/images/login_img.svg";
-import Parse from "parse";
 import Alert from "../primitives/Alert";
 import { appInfo } from "../constant/appinfo";
 import { useDispatch } from "react-redux";
@@ -11,6 +10,8 @@ import {
 } from "../constant/const";
 import { useTranslation } from "react-i18next";
 import Loader from "../primitives/Loader";
+import { requestPasswordReset } from "../api/auth";
+import { logout } from "../api/session";
 
 function ForgotPassword() {
   const { t } = useTranslation();
@@ -45,12 +46,11 @@ function ForgotPassword() {
       localStorage.setItem("appLogo", appInfo.applogo);
       localStorage.setItem("userSettings", JSON.stringify(appInfo.settings));
       if (state.email) {
-        const username = state.email;
         try {
-            await Parse.User.requestPasswordReset(username);
+          await requestPasswordReset(state.email);
           setToast({ type: "success", message: t("reset-password-alert-1") });
         } catch (err) {
-          console.log("err ", err.code);
+          console.log("err ", err);
           setToast({
             type: "danger",
             message: err.message || t("reset-password-alert-2")
@@ -72,12 +72,8 @@ function ForgotPassword() {
     // eslint-disable-next-line
   }, []);
   const saveLogo = async () => {
-    try {
-      await Parse.User.logOut();
-    } catch (err) {
-      console.log("err while logging out ", err);
-    }
-      setImage(appInfo?.applogo || undefined);
+    logout();
+    setImage(appInfo?.applogo || undefined);
   };
   return (
     <div>

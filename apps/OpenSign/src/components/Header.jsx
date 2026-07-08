@@ -3,7 +3,6 @@ import dp from "../assets/images/dp.png";
 import FullScreenButton from "./FullScreenButton";
 import ThemeToggle from "./ThemeToggle";
 import { useNavigate } from "react-router";
-import Parse from "parse";
 import { useWindowSize } from "../hook/useWindowSize";
 import {
   getAppLogo,
@@ -15,6 +14,7 @@ import { appInfo } from "../constant/appinfo";
 import { useDispatch } from "react-redux";
 import { toggleSidebar } from "../redux/reducers/sidebarReducer";
 import { sessionStatus } from "../redux/reducers/userReducer";
+import { logout } from "../api/session";
 
 const Header = ({ isConsole, setIsLoggingOut }) => {
   const { t, i18n } = useTranslation();
@@ -63,29 +63,14 @@ const Header = ({ isConsole, setIsLoggingOut }) => {
   const handleLogout = async () => {
     setIsOpen(false);
     setIsLoggingOut(true);
-    try {
-      await Parse.User.logOut();
-    } catch (err) {
-      console.log("Err while logging out", err);
-    } finally {
-      dispatch(sessionStatus(true));
-    }
-    let appdata = localStorage.getItem("userSettings");
+    logout();
+    dispatch(sessionStatus(false));
     let applogo = localStorage.getItem("appLogo");
-    let defaultmenuid = localStorage.getItem("defaultmenuid");
-    let PageLanding = localStorage.getItem("PageLanding");
-    let baseUrl = localStorage.getItem("baseUrl");
-    let appid = localStorage.getItem("parseAppId");
     let favicon = localStorage.getItem("favicon");
 
     localStorage.clear();
     saveLanguageInLocal(i18n);
     localStorage.setItem("appLogo", applogo);
-    localStorage.setItem("defaultmenuid", defaultmenuid);
-    localStorage.setItem("PageLanding", PageLanding);
-    localStorage.setItem("userSettings", appdata);
-    localStorage.setItem("baseUrl", baseUrl);
-    localStorage.setItem("parseAppId", appid);
     localStorage.setItem("favicon", favicon);
     setIsLoggingOut(false);
     navigate("/");
@@ -141,7 +126,7 @@ const Header = ({ isConsole, setIsLoggingOut }) => {
         </div>
         <div className="flex-1 ml-2">
           <div
-            onClick={() => navigate("/dashboard/35KBoSgoAK")}
+            onClick={() => navigate("/documents")}
             className="h-[25px] md:h-[40px] w-auto overflow-hidden cursor-pointer"
           >
             {applogo && (

@@ -27,13 +27,17 @@ const GuestLogin = lazyWithRetry(() => import("./pages/GuestLogin"));
 const ChangePassword = lazyWithRetry(() => import("./pages/ChangePassword"));
 const UserProfile = lazyWithRetry(() => import("./pages/UserProfile"));
 const Opensigndrive = lazyWithRetry(() => import("./pages/Opensigndrive"));
-const ManageSign = lazyWithRetry(() => import("./pages/Managesign"));
+const ManageSignatures = lazyWithRetry(() => import("./pages/ManageSignatures"));
 const AddAdmin = lazyWithRetry(() => import("./pages/AddAdmin"));
-const UpdateExistUserAdmin = lazyWithRetry(
-  () => import("./pages/UpdateExistUserAdmin")
-);
 const Preferences = lazyWithRetry(() => import("./pages/Preferences"));
 const Login = lazyWithRetry(() => import("./pages/Login"));
+const ActivationPage = lazyWithRetry(() => import("./pages/ActivationPage"));
+const DocumentsList = lazyWithRetry(() => import("./pages/DocumentsList"));
+const TemplatesList = lazyWithRetry(() => import("./pages/TemplatesList"));
+const ContactsList = lazyWithRetry(() => import("./pages/ContactsList"));
+const SendDocumentPage = lazyWithRetry(() => import("./pages/SendDocumentPage"));
+const SignDocumentPage = lazyWithRetry(() => import("./pages/SignDocumentPage"));
+const TemplateRolesPage = lazyWithRetry(() => import("./pages/TemplateRolesPage"));
 const VerifyDocument = lazyWithRetry(() => import("./pages/VerifyDocument"));
 const EmailBuilder = lazyWithRetry(() => import("./pages/EmailBuilder"));
 
@@ -68,10 +72,6 @@ function App() {
             <Route element={<ValidateRoute />}>
               <Route exact path="/" element={<Lazy Page={Login} />} />
                   <Route path="/addadmin" element={<Lazy Page={AddAdmin} />} />
-                  <Route
-                    path="/upgrade-2.1"
-                    element={<Lazy Page={UpdateExistUserAdmin} />}
-                  />
             </Route>
             <Route element={<Validate />}>
               <Route
@@ -84,10 +84,18 @@ function App() {
               path="/login/:base64url"
               element={<Lazy Page={GuestLogin} />}
             />
+            <Route
+              path="/signatures/:requestId/sign"
+              element={<Lazy Page={SignDocumentPage} />}
+            />
             <Route path="/debugpdf" element={<Lazy Page={DebugPdf} />} />
               <Route
                 path="/forgetpassword"
                 element={<Lazy Page={ForgetPassword} />}
+              />
+              <Route
+                path="/activate"
+                element={<Lazy Page={ActivationPage} />}
               />
             <Route element={<HomeLayout />}>
                   <Route path="/users" element={<UserList />} />
@@ -98,9 +106,17 @@ function App() {
               <Route path="/form/:id" element={<Form />} />
               <Route path="/report/:id" element={<Report />} />
               <Route path="/dashboard/:id" element={<Dashboard />} />
+              <Route path="/documents" element={<Lazy Page={DocumentsList} />} />
+              <Route
+                path="/documents/:id/signature-workflow"
+                element={<Lazy Page={SendDocumentPage} />}
+              />
+              <Route path="/templates" element={<Lazy Page={TemplatesList} />} />
+              <Route path="/templates/:id/roles" element={<Lazy Page={TemplateRolesPage} />} />
+              <Route path="/contacts" element={<Lazy Page={ContactsList} />} />
               <Route path="/profile" element={<Lazy Page={UserProfile} />} />
               <Route path="/drive" element={<Lazy Page={Opensigndrive} />} />
-              <Route path="/managesign" element={<Lazy Page={ManageSign} />} />
+              <Route path="/managesign" element={<Lazy Page={ManageSignatures} />} />
               <Route
                 path="/template/:templateId"
                 element={<DragProvider Page={TemplatePlaceholder} />}

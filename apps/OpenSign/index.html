@@ -16,6 +16,14 @@
 
 <body>
   <div id="root" style="touch-action:pan-x pan-y;"></div>
+  <script>
+    // Local-only dev testing shim, not committed: vite.config.js's `define: { "process.env": {...} }` isn't
+    // actually substituting process.env.REACT_APP_* references when Vite dev-serves this file (verified via
+    // direct fetch of the transformed module - the source comes back completely unchanged). getEnv() in
+    // Utils.js reads window.RUNTIME_ENV *before* falling back to process.env, so setting it here sidesteps
+    // the broken substitution entirely.
+    window.RUNTIME_ENV = { REACT_APP_SERVERURL: "http://localhost:8080/app" };
+  </script>
   <script type="module" src="/src/index.jsx"></script>
 </body>
 

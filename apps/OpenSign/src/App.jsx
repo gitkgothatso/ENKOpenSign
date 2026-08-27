@@ -41,7 +41,11 @@ const TemplateRolesPage = lazyWithRetry(() => import("./pages/TemplateRolesPage"
 const VerifyDocument = lazyWithRetry(() => import("./pages/VerifyDocument"));
 const EmailBuilder = lazyWithRetry(() => import("./pages/EmailBuilder"));
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/legacy/build/pdf.worker.min.mjs`;
+// Local-only dev fix, not committed: protocol-relative URL resolves to http:// on this http-served
+// dev page, which unpkg.com 301-redirects to https:// - that cross-origin redirect breaks the browser's
+// CORS check for the dynamically-imported worker module ("Setting up fake worker failed"), which in turn
+// makes react-pdf's <Document> report a generic load failure. Pinning https:// avoids the redirect.
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/legacy/build/pdf.worker.min.mjs`;
 const AppLoader = () => {
   return (
     <div className="flex justify-center items-center h-[100vh]">

@@ -1,9 +1,10 @@
+import { BRAND_NAME, brand } from "../../../../constant/brand";
 import { TEditorConfiguration } from "../../documents/editor/core";
 
 const getRequestEmail = (
 ): TEditorConfiguration => {
   const appName =
-    "OpenSign™";
+    BRAND_NAME;
 
   const logoBlock =
         {
@@ -16,7 +17,7 @@ const getRequestEmail = (
               props: {
                 width: null,
                 height: 50,
-                url: "https://qikinnovation.ams3.digitaloceanspaces.com/logo.png",
+                url: brand.emailLogoUrl,
                 alt: "logo",
                 linkHref: null,
                 contentAlignment: "middle"

@@ -1,11 +1,12 @@
+import { BRAND_NAME } from "../../constant/brand";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { NavLink } from "react-router";
 
 const Menu = ({ item, isOpen, closeSidebar }) => {
   const appName =
-    "OpenSign™";
-  const drivename = appName === "OpenSign™" ? "OpenSign™" : "";
+    BRAND_NAME;
+  const drivename = appName === BRAND_NAME ? BRAND_NAME : "";
   const { t } = useTranslation();
   const { selectedMenu } = useSelector((state) => state.sidebar);
 

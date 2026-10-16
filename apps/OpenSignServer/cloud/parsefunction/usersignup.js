@@ -4,7 +4,7 @@ const serverUrl = cloudServerUrl; //process.env.SERVER_URL;
 const APPID = serverAppId;
 const masterKEY = process.env.MASTER_KEY;
 
-const normalizeEmail = (email) => email.toLowerCase().replace(/\s/g, '');
+const normalizeEmail = email => email.toLowerCase().replace(/\s/g, '');
 
 async function saveUser(userDetails) {
   const normalizedEmail = normalizeEmail(userDetails.email.toLowerCase().replace(/\s/g, ''));

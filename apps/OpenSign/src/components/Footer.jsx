@@ -1,10 +1,11 @@
+import { BRAND_NAME, brand } from "../constant/brand";
 import React, { useEffect, useState } from "react";
 import Package from "../../package.json";
 import axios from "axios";
 import { openInNewTab } from "../constant/Utils";
 import { useTranslation } from "react-i18next";
 const Footer = () => {
-  const appName = "OpenSign™";
+  const appName = BRAND_NAME;
   const { t } = useTranslation();
   const [showButton, setShowButton] = useState(false);
   const [version, setVersion] = useState("");
@@ -41,9 +42,7 @@ const Footer = () => {
   }, []);
 
   const openUrl = () => {
-    openInNewTab(
-      "https://github.com/OpenSignLabs/OpenSign/releases/tag/" + version
-    );
+    openInNewTab(brand.sourceUrl + "/releases/tag/" + version);
   };
   return (
     <>

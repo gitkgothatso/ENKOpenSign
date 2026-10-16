@@ -1,3 +1,4 @@
+import { BRAND_NAME } from "../constant/brand";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import ModalUi from "./ModalUi";
@@ -13,7 +14,7 @@ import { saveAs } from "file-saver";
 
 function DownloadPdfZip(props) {
   const appName =
-    "OpenSign™";
+    BRAND_NAME;
   const { t } = useTranslation();
   const [selectType, setSelectType] = useState(1);
   const [isDownloading, setIsDownloading] = useState(false);

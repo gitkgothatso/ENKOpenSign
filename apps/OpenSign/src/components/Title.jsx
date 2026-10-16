@@ -1,3 +1,4 @@
+import { BRAND_NAME } from "../constant/brand";
 import { useLocation, matchPath } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
@@ -58,7 +59,7 @@ export default function Title() {
   const { pathname, state } = useLocation();
   const { t } = useTranslation();
   const appName =
-    "OpenSign™";
+    BRAND_NAME;
   const logo = useMemo(() => localStorage.getItem("favicon"), []);
   const prefix = useMemo(
     () => resolveTitle(pathname, state?.title),

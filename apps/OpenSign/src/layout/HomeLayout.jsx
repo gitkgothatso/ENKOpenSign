@@ -1,3 +1,4 @@
+import { BRAND_NAME } from "../constant/brand";
 import { useState, useEffect } from "react";
 import {
   nonPresentMaskCss
@@ -19,7 +20,7 @@ import SessionExpiredModal from "../primitives/SessionExpiredModal";
 
 const HomeLayout = () => {
   const appName =
-    "OpenSign™";
+    BRAND_NAME;
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const tourArr = useSelector((state) => state.TourSteps);

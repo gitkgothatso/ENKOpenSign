@@ -1,3 +1,4 @@
+import { BRAND_NAME } from "../../constant/brand";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import ModalUi from "../../primitives/ModalUi";
@@ -5,7 +6,7 @@ import ModalUi from "../../primitives/ModalUi";
 function AgreementContent(props) {
   const { t } = useTranslation();
   const appName =
-    "OpenSign™";
+    BRAND_NAME;
   const h2Style = "text-base-content font-medium text-lg";
   const ulStyle = "list-disc px-4 py-3";
   const handleOnclick = () => {

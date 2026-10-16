@@ -14,7 +14,15 @@ import FSFilesAdapter from '@parse/fs-files-adapter';
 import { app as customRoute } from './cloud/customRoute/customApp.js';
 import { exec } from 'child_process';
 import { createTransport } from 'nodemailer';
-import { appName, cloudServerUrl, serverAppId, smtpenable, smtpsecure, useLocal } from './Utils.js';
+import {
+  appName,
+  cloudServerUrl,
+  emailTemplatesDir,
+  serverAppId,
+  smtpenable,
+  smtpsecure,
+  useLocal,
+} from './Utils.js';
 import { SSOAuth } from './auth/authadapter.js';
 import runDbMigrations from './migrationdb/index.js';
 import { validateSignedLocalUrl } from './cloud/parsefunction/getSignedUrl.js';
@@ -135,16 +143,16 @@ export const config = {
               // The template used by Parse Server to send an email for password
               // reset; this is a reserved template name.
               passwordResetEmail: {
-                subjectPath: './files/password_reset_email_subject.txt',
-                textPath: './files/password_reset_email.txt',
-                htmlPath: './files/password_reset_email.html',
+                subjectPath: `${emailTemplatesDir}/password_reset_email_subject.txt`,
+                textPath: `${emailTemplatesDir}/password_reset_email.txt`,
+                htmlPath: `${emailTemplatesDir}/password_reset_email.html`,
               },
               // The template used by Parse Server to send an email for email
               // address verification; this is a reserved template name.
               verificationEmail: {
-                subjectPath: './files/verification_email_subject.txt',
-                textPath: './files/verification_email.txt',
-                htmlPath: './files/verification_email.html',
+                subjectPath: `${emailTemplatesDir}/verification_email_subject.txt`,
+                textPath: `${emailTemplatesDir}/verification_email.txt`,
+                htmlPath: `${emailTemplatesDir}/verification_email.html`,
               },
             },
             apiCallback: async ({ payload, locale }) => {

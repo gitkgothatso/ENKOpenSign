@@ -22,7 +22,13 @@ RUN chmod +x entrypoint.sh
 ENV NODE_ENV=production
 ENV GENERATE_SOURCEMAP=false
 # build
-RUN npm run build
+# APP_VERSION (ENK release tag) is shown in the footer; without it the build
+# fetches the latest upstream OpenSign release name.
+ARG APP_VERSION
+RUN if [ -n "$APP_VERSION" ]; then \
+      echo "$APP_VERSION" > public/version.txt && \
+      NODE_OPTIONS="--max-old-space-size=8192" npx vite build; \
+    else npm run build; fi
 
 # Inject env.js loader into index.html
 RUN sed -i '/<head>/a\<script src="/env.js"></script>' build/index.html

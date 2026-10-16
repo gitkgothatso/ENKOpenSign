@@ -1,3 +1,4 @@
+import { BRAND_NAME } from "../constant/brand";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { PDFDocument } from "pdf-lib";
 import "../styles/signature.css";
@@ -86,7 +87,7 @@ function SignYourSelf() {
   const { scrollRef } = useScroll();
   const isShowModal = useSelector((state) => state.widget.isShowModal);
   const appName =
-    "OpenSign™";
+    BRAND_NAME;
   const divRef = useRef(null);
   const nodeRef = useRef(null);
   const pdfRef = useRef();

@@ -1,0 +1,5 @@
+/* White-label theme overrides (ENK).
+   Intentionally empty: replaced at container start by /config/brand/theme.css.
+   Override DaisyUI colour variables per theme, e.g.
+   html[data-theme="opensigncss"] { --p: 27.4% 0.072 252; --pc: 100% 0 0; }
+*/

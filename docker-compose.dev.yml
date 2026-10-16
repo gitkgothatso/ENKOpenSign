@@ -1,0 +1,23 @@
+# Backing services for local development (ENK).
+# Run the apps from source against these:
+#   docker compose -f docker-compose.dev.yml up -d
+#   apps/OpenSignServer: MONGODB_URI=mongodb://localhost:27018/OpenSignDB, SMTP_HOST=localhost, SMTP_PORT=1025
+#   apps/OpenSignServer: npm run watch      (API on :8080)
+#   apps/OpenSign:       npm run dev        (UI on :3000)
+# MailDev inbox: http://localhost:1080
+services:
+  mongo:
+    image: mongo:8.0
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-dev-data:/data/db
+
+  maildev:
+    image: maildev/maildev:2.2.1
+    ports:
+      - "1025:1025" # SMTP
+      - "1080:1080" # web UI
+
+volumes:
+  mongo-dev-data:

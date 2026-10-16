@@ -1,0 +1,15 @@
+# SITE_ADDRESS: the client's domain (automatic Let's Encrypt), or e.g. https://sign.internal / :443 on-prem.
+# CADDY_TLS: optional whole directive, e.g. "tls internal" (private CA, no public DNS)
+#            or "tls /certs/cert.pem /certs/key.pem" for a client-supplied certificate.
+{$SITE_ADDRESS} {
+	{$CADDY_TLS}
+	encode zstd gzip
+
+	handle_path /api/* {
+		reverse_proxy server:8080
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}

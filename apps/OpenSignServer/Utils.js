@@ -17,7 +17,12 @@ dotenv.config({ quiet: true });
 
 export const cloudServerUrl = 'http://localhost:8080/app';
 export const serverAppId = process.env.APP_ID || 'opensign';
-export const appName = 'OpenSign™';
+export const appName = process.env.APP_NAME || 'OpenSign™';
+// White-label (ENK) settings; documented in deploy/.env.example
+export const complaintsEmail = process.env.COMPLAINTS_EMAIL || 'complaints@opensignlabs.com';
+export const emailTemplatesDir = process.env.EMAIL_TEMPLATES_DIR || './files';
+export const emailLogoUrl =
+  process.env.EMAIL_LOGO_URL || 'https://qikinnovation.ams3.digitaloceanspaces.com/logo.png';
 export const prefillDraftDocWidget = ['date', 'textbox', 'checkbox', 'radio button', 'image'];
 export const prefillDraftTemWidget = [
   'date',
@@ -669,7 +674,7 @@ export const mailTemplate = param => {
   const themeColor = '#47a3ad';
   const subject = `${param.senderName} has requested you to sign "${param.title}"`;
   const AppName = appName;
-  const logo = `<img src='https://qikinnovation.ams3.digitaloceanspaces.com/logo.png' height='50' />`;
+  const logo = `<img src='${emailLogoUrl}' height='50' />`;
 
   const body =
     "<html><head><meta http-equiv='Content-Type' content='text/html;charset=UTF-8' /></head><body><div style='background-color:#f5f5f5;padding:20px'><div style='background:white;padding-bottom:20px'><div style='padding:10px'>" +

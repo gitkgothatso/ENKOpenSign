@@ -1,0 +1,5 @@
+# Per-instance data: never commit
+.env
+.enk-previous-version
+backups/
+config/

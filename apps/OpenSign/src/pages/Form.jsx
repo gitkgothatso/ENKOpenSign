@@ -1,3 +1,4 @@
+import { BRAND_NAME } from "../constant/brand";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { formJson } from "../json/FormJson";
@@ -51,7 +52,7 @@ function Form() {
 
 const Forms = (props) => {
   const appName =
-    "OpenSign™";
+    BRAND_NAME;
   const { t } = useTranslation();
   const abortController = new AbortController();
   const inputFileRef = useRef(null);

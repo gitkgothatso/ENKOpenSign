@@ -1,3 +1,4 @@
+import { BRAND_NAME } from "../constant/brand";
 import { useEffect, useState } from "react";
 import Parse from "parse";
 import { useDispatch } from "react-redux";
@@ -24,7 +25,7 @@ import SelectLanguage from "../components/pdf/SelectLanguage";
 
 function Login() {
   const appName =
-    "OpenSign™";
+    BRAND_NAME;
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();

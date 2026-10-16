@@ -1,9 +1,11 @@
+import { brand } from "../constant/brand";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
 
 const SocialMedia = () => {
   const { t } = useTranslation();
+  if (brand.hideSocial) return null;
 
   return (
     <React.Fragment>

@@ -2,11 +2,24 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import Backend from "i18next-http-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
+import { BRAND_NAME, isCustomBrand } from "./constant/brand";
+
+// White-label (ENK): show the client brand wherever translations say "OpenSign"
+// (word-boundary match keeps opensignlabs.com links and lowercase keys intact).
+const brandPostProcessor = {
+  type: "postProcessor",
+  name: "brand",
+  process: (value) =>
+    typeof value === "string"
+      ? value.replace(/OpenSign™?(?![A-Za-z])/g, BRAND_NAME)
+      : value
+};
 
 i18n
   .use(Backend)
   .use(LanguageDetector) // Use LanguageDetector directly without creating an instance
   .use(initReactI18next)
+  .use(brandPostProcessor)
   .init({
     backend: {
       loadPath: "/locales/{{lng}}/{{ns}}.json"
@@ -25,6 +38,7 @@ i18n
     interpolation: {
       escapeValue: false // Not needed for react as it escapes by default
     },
+    postProcess: isCustomBrand ? ["brand"] : false,
     whitelist: ["en", "es", "fr", "it", "de", "hi", "kr"] // List of allowed languages
   });
 

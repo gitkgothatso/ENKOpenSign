@@ -139,7 +139,6 @@ cmd_upgrade() {
   cmd_backup >/dev/null
   echo "$current" >"$PREV_FILE"
   env_set ENK_VERSION "$target"
-  "${COMPOSE[@]}" pull server web
   if ! "${COMPOSE[@]}" up -d --wait; then
     echo "Upgrade to $target did not become healthy. Roll back with: $0 rollback" >&2
     exit 1
@@ -201,7 +200,8 @@ const result = await call("addadmin", {
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   },
 });
-if (result?.message) { console.error(result.message); process.exit(1); }
+// addadmin returns { message: "User sign up" } on success, "User already exist" otherwise.
+if (result?.message !== "User sign up") { console.error(result?.message || "addadmin failed"); process.exit(1); }
 console.log(`Administrator ${process.env.EMAIL} created for ${process.env.COMPANY}.`);
 '
 }

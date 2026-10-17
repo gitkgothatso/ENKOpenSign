@@ -1,0 +1,13 @@
+# Images build from the repo root (apps/*/Dockerhubfile), so the per-app .dockerignore
+# files are not applied. Keep local state, secrets and host-installed packages out of images.
+.git
+**/node_modules
+**/npm-debug.log
+**/.env
+**/.env.*
+!**/.env.example
+apps/OpenSign/build
+apps/OpenSignServer/files/files/*
+deploy/.env
+deploy/backups
+deploy/config

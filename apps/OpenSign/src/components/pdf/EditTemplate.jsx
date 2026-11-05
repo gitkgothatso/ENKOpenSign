@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../../constant/runtimeConfig";
 import {
   useState,
   useRef,
@@ -31,7 +32,7 @@ const EditTemplate = ({
   isAddYourSelfCheckbox,
 }) => {
   const appName =
-    "OpenSign™";
+    getRuntimeConfig().productName;
   const { t } = useTranslation();
   const inputFileRef = useRef(null);
   const [formData, setFormData] = useState({

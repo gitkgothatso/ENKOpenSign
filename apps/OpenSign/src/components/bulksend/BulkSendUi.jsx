@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../../constant/runtimeConfig";
 import {
   useState,
   useEffect,
@@ -48,7 +49,7 @@ const ALL_EXCLUDED_TYPES = new Set([
 const BulkSendUi = (props) => {
   const { t } = useTranslation();
   const appName =
-    "OpenSign™";
+    getRuntimeConfig().productName;
   const dispatch = useDispatch();
   const { isBulkLoader } = useSelector((state) => state.widget);
   const [forms, setForms] = useState([]);

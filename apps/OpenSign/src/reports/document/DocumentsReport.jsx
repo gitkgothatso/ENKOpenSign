@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../../constant/runtimeConfig";
 import React, { useState, useEffect, useRef } from "react";
 import pad from "../../assets/images/pad.svg";
 import recreatedoc from "../../assets/images/recreatedoc.png";
@@ -43,7 +44,7 @@ const DocumentsReport = (props) => {
   const titleRef = useRef(null);
   const titleElement = useElSize(titleRef);
   const appName =
-    "OpenSign™";
+    getRuntimeConfig().productName;
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();

@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../constant/runtimeConfig";
 import { useTranslation } from "react-i18next";
 import { formatDateToDdMmmYyyy } from "../constant/Utils";
 import SignerCell from "./SignerCell";
@@ -37,8 +38,8 @@ export const RenderReportCell = ({
 }) => {
   const { t } = useTranslation();
   const appName =
-    "OpenSign™";
-  const drivename = appName === "OpenSign™" ? "OpenSign™" : "";
+    getRuntimeConfig().productName;
+  const drivename = appName === getRuntimeConfig().productName ? getRuntimeConfig().productName : "";
   switch (col) {
     case "Sr.No":
       return (

@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../constant/runtimeConfig";
 import { useEffect, useState } from "react";
 import Parse from "parse";
 import { appInfo } from "../constant/appinfo";
@@ -16,7 +17,7 @@ import { emailRegex } from "../constant/const";
 
 const AddAdmin = () => {
   const appName =
-    "OpenSign™";
+    getRuntimeConfig().productName;
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();

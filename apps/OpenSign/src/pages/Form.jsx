@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../constant/runtimeConfig";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { formJson } from "../json/FormJson";
@@ -53,7 +54,7 @@ function Form() {
 
 const Forms = (props) => {
   const appName =
-    "OpenSign™";
+    getRuntimeConfig().productName;
   const { t } = useTranslation();
   const abortController = new AbortController();
   const inputFileRef = useRef(null);

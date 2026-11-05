@@ -1,9 +1,10 @@
+import { getRuntimeConfig } from "../../../../constant/runtimeConfig";
 import { TEditorConfiguration } from "../../documents/editor/core";
 
 const getCompletionEmail = (
 ): TEditorConfiguration => {
   const appName =
-    "OpenSign™";
+    getRuntimeConfig().productName;
 
   const logoBlock =
         {

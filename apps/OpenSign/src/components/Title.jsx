@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../constant/runtimeConfig";
 import { useLocation, matchPath } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
@@ -72,7 +73,7 @@ export default function Title() {
     };
   }, []);
   const appName =
-    "OpenSign™";
+    getRuntimeConfig().productName;
   const logo = localStorage.getItem("favicon");
   const { metaDescription, themeColor, backgroundColor } = getBrowserMetadata();
   const prefix = useMemo(

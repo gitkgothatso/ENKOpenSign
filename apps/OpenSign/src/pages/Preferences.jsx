@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../constant/runtimeConfig";
 import React, { useEffect, useState } from "react";
 import Alert from "../primitives/Alert";
 import { useTranslation } from "react-i18next";
@@ -28,7 +29,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 const Preferences = () => {
   const appName =
-    "OpenSign™";
+    getRuntimeConfig().productName;
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { isLoader, isTopLoader, alertInfo } = useSelector(

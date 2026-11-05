@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../../../constant/runtimeConfig";
 import React, { useEffect, useState } from "react";
 import Parse from "parse";
 import CreateFolder from "./CreateFolder";
@@ -7,8 +8,8 @@ import { useTranslation } from "react-i18next";
 
 const SelectFolder = ({ required, onSuccess, folderCls, isReset }) => {
   const appName =
-    "OpenSign™";
-  const drivename = appName === "OpenSign™" ? "OpenSign™" : "";
+    getRuntimeConfig().productName;
+  const drivename = appName === getRuntimeConfig().productName ? getRuntimeConfig().productName : "";
   const { t } = useTranslation();
   const [isOpen, SetIsOpen] = useState(false);
   const [clickFolder, setClickFolder] = useState("");

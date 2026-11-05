@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../constant/runtimeConfig";
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { lazyWithRetry, withSessionValidation } from "../utils";
 import "../styles/opensigndrive.css";
@@ -34,8 +35,8 @@ const AppLoader = () => {
 };
 function Opensigndrive() {
   const appName =
-    "OpenSign™";
-  const drivename = appName === "OpenSign™" ? "OpenSign™" : "";
+    getRuntimeConfig().productName;
+  const drivename = appName === getRuntimeConfig().productName ? getRuntimeConfig().productName : "";
   const { t } = useTranslation();
   const navigate = useNavigate();
   const scrollRef = useRef(null);

@@ -1,11 +1,12 @@
+import { getRuntimeConfig } from "../../constant/runtimeConfig";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { NavLink } from "react-router";
 
 const Submenu = ({ item, closeSidebar, toggleSubmenu, submenuOpen }) => {
   const appName =
-    "OpenSign™";
-  const drivename = appName === "OpenSign™" ? "OpenSign™" : "";
+    getRuntimeConfig().productName;
+  const drivename = appName === getRuntimeConfig().productName ? getRuntimeConfig().productName : "";
   const { t } = useTranslation();
   const { title, icon, children } = item;
   const { selectedMenu } = useSelector((state) => state.sidebar);

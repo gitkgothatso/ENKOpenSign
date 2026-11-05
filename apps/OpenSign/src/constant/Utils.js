@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "./runtimeConfig";
 import axios from "axios";
 import { getErrorMessage, isCreditQuotaError } from "../utils/creditErrors";
 import moment from "moment";
@@ -1511,7 +1512,7 @@ export const addInitialData = (signerPos, setXyPosition, value, userId) => {
 
 //function for embed document id
 export const embedDocId = async (pdfOriginalWH, pdfDoc, documentId) => {
-  const appName = "OpenSign™";
+  const appName = getRuntimeConfig().productName;
   // `fontBytes` is used to embed custom font in pdf
   const pdfFontUrl = getRuntimePdfFontUrl();
   if (!pdfFontUrl) throw new Error("A PDF font URL is required.");
@@ -2852,11 +2853,11 @@ export const getAppLogo = async () => {
     if (tenant) {
       const resolvedFavicon =
         tenant?.favicon || tenant?.logo || appInfo.fev_Icon;
-      localStorage.setItem("appname", "OpenSign™");
+      localStorage.setItem("appname", getRuntimeConfig().productName);
       localStorage.setItem("favicon", appInfo.fev_Icon);
       persistBrandPresentation(
         {
-          appName: tenant?.appname || "OpenSign™",
+          appName: tenant?.appname || getRuntimeConfig().productName,
           logo: tenant?.logo || appInfo.applogo,
           favicon: resolvedFavicon
         },
@@ -3127,7 +3128,7 @@ export const handleToPrint = async (event, setIsDownloading, pdfDetails) => {
 };
 const downloadCertificate = async (certificate, isZip, asBlob) => {
   try {
-    const appName = "OpenSign™";
+    const appName = getRuntimeConfig().productName;
     const certificateUrl = certificate;
     if (isZip) {
       return certificateUrl;

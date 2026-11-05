@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../constant/runtimeConfig";
 import { useEffect, useState } from "react";
 import Loader from "../primitives/Loader";
 import Parse from "parse";
@@ -7,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { emailRegex } from "../constant/const";
 const UpdateExistUserAdmin = () => {
   const appName =
-    "OpenSign™";
+    getRuntimeConfig().productName;
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [formdata, setFormdata] = useState({ email: "", masterkey: "" });

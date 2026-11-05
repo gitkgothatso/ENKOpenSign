@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../constant/runtimeConfig";
 import { useState, useEffect } from "react";
 import { runtimeUrls } from "../constant/const";
 import {
@@ -27,7 +28,7 @@ import {
 
 const HomeLayout = () => {
   const appName =
-    "OpenSign™";
+    getRuntimeConfig().productName;
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const isEditorRoute = [

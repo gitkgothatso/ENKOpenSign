@@ -1,3 +1,4 @@
+import { getRuntimeConfig } from "../constant/runtimeConfig";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { PDFDocument } from "pdf-lib";
 import "../styles/signature.css";
@@ -86,7 +87,7 @@ function PdfRequestFiles(
   const defaultSignImg = useSelector((state) => state.widget.defaultSignImg);
   const myInitial = useSelector((state) => state.widget.myInitial);
   const appName =
-    "OpenSign™";
+    getRuntimeConfig().productName;
   const [pdfDetails, setPdfDetails] = useState([]);
   const [signedSigners, setSignedSigners] = useState([]);
   const [unsignedSigners, setUnSignedSigners] = useState([]);

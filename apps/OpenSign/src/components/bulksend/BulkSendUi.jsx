@@ -1,4 +1,3 @@
-import { BRAND_NAME } from "../../constant/brand";
 import {
   useState,
   useEffect,
@@ -49,7 +48,7 @@ const ALL_EXCLUDED_TYPES = new Set([
 const BulkSendUi = (props) => {
   const { t } = useTranslation();
   const appName =
-    BRAND_NAME;
+    "OpenSign™";
   const dispatch = useDispatch();
   const { isBulkLoader } = useSelector((state) => state.widget);
   const [forms, setForms] = useState([]);
@@ -542,7 +541,7 @@ const BulkSendUi = (props) => {
         setStepKey("response");
         setMessage({
           status: "success",
-          message: "Documents sent successfully."
+          message: t("bulk-send-processing")
         });
         // props.handleClose("success", Documents?.length);
       }

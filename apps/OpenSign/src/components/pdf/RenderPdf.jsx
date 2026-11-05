@@ -8,10 +8,12 @@ import React, {
 import { Document, Page } from "react-pdf";
 import {
   defaultWidthHeight,
+  generateId,
   getContainerScale,
   handleWidgetResize,
   handleSignYourselfWidgetResize,
   isMobile,
+  randomId,
   textInputWidget,
   textWidget,
   pendingButtonZoomScrollRef
@@ -20,6 +22,7 @@ import Placeholder from "./Placeholder";
 import Alert from "../../primitives/Alert";
 import { useTranslation } from "react-i18next";
 import usePdfPinchZoom from "../../hook/usePdfPinchZoom";
+import useMobilePdfHeight from "../../hook/useMobilePdfHeight";
 import { useDispatch, useSelector } from "react-redux";
 import Guidelines from "./Guidelines";
 import CanvasGuidelines from "./CanvasGuidelines";
@@ -29,6 +32,7 @@ import DragGuidelinesLayer from "./DragGridLinesLayer";
 import { useDrop } from "react-dnd";
 import WidgetsDragPreview from "./WidgetsDragPreview";
 import { useScroll } from "../../context/ScrollPdfContext";
+import useWidgetAreaSelection from "../../hook/useWidgetAreaSelection";
 
 function RenderPdf(props) {
   const { t } = useTranslation();
@@ -52,6 +56,8 @@ function RenderPdf(props) {
   const lastBestPage = useRef(1);
   // Pending requestAnimationFrame id for scroll throttling (null = none pending)
   const scrollRafId = useRef(null);
+  const widgetClipboardRef = useRef(null);
+  const pasteTargetRef = useRef(null);
   const { scrollRef } = useScroll();
   // Internal count of total pages (set from Document onLoadSuccess)
   const [allPagesCount, setAllPagesCount] = useState(0);
@@ -122,9 +128,249 @@ function RenderPdf(props) {
   const [scaledHeight, setScaledHeight] = useState();
   //check isGuestSigner is present in local if yes than handle login flow header in mobile view
   const isGuestSigner = localStorage.getItem("isGuestSigner");
+  const isLoadRoute = window.location.pathname.startsWith("/load/");
   const scrollTriggerId = useSelector((state) => state.widget.scrollTriggerId);
   const isOpen = useSelector((state) => state.sidebar.isOpen);
   const pdfContainerRef = useRef(null);
+  const usesFlatWidgetPositions = props.isSignYourself && !props.isSelfSign;
+  const widgetAreaSelection = useWidgetAreaSelection({
+    enabled: Boolean(
+      !isMobile &&
+      !props.pdfRequest &&
+      !props.pdfDetails?.[0]?.IsCompleted &&
+      !props.isDragging &&
+      props.handleDeleteWidget &&
+      (props.placeholder || props.isSelfSign || props.isSignYourself) &&
+      (usesFlatWidgetPositions ? props.setXyPosition : props.setSignerPos)
+    ),
+    containerRef: pdfContainerRef,
+    positions: usesFlatWidgetPositions ? props.xyPosition : props.signerPos,
+    setPositions: usesFlatWidgetPositions
+      ? props.setXyPosition
+      : props.setSignerPos,
+    nested: !usesFlatWidgetPositions,
+    scale: props.scale || 1,
+    clearActiveWidget: props.setCurrWidgetsDetails
+  });
+  const mobileHeight = useMobilePdfHeight(
+    scrollRef,
+    scaledHeight,
+    isMobile && props.placeholder && !isGuestSigner
+  );
+
+  useEffect(() => {
+    const canCopyWidgets =
+      props.placeholder ||
+      props.isSelfSign ||
+      (props.isSignYourself && !props.pdfDetails?.[0]?.IsCompleted);
+    const widgetPositions = props.isSignYourself
+      ? props.xyPosition
+      : props.signerPos;
+    const setWidgetPositions = props.isSignYourself
+      ? props.setXyPosition
+      : props.setSignerPos;
+    if ((!canCopyWidgets && !props.handleDeleteWidget) || !setWidgetPositions)
+      return undefined;
+
+    const isTextInput = (target) => {
+      const element = target instanceof Element ? target : null;
+      return Boolean(
+        element?.closest("input, textarea, select, [contenteditable='true']")
+      );
+    };
+
+    const findWidget = (key) => {
+      for (const signer of widgetPositions || []) {
+        if (signer?.placeHolder) {
+          for (const page of signer.placeHolder) {
+            const widget = (page.pos || []).find((item) => item?.key === key);
+            if (widget) {
+              return { signer, page, widget };
+            }
+          }
+        } else if (signer?.pos) {
+          const widget = signer.pos.find((item) => item?.key === key);
+          if (widget) return { page: signer, widget };
+        }
+      }
+      return null;
+    };
+
+    const handleWidgetClipboard = (event) => {
+      if (event.defaultPrevented || isTextInput(event.target)) return;
+
+      if (event.key === "Delete" && props.handleDeleteWidget) {
+        const selectedKey = props.currWidgetsDetails?.key;
+        const location = selectedKey && findWidget(selectedKey);
+        if (!location) return;
+
+        event.preventDefault();
+        props.handleDeleteWidget(
+          selectedKey,
+          location.signer?.Id || null,
+          location.page?.pageNumber || props.currWidgetsDetails?.pageNumber
+        );
+        props.setCurrWidgetsDetails?.({});
+        return;
+      }
+
+      if (!canCopyWidgets || !event.ctrlKey) return;
+
+      if (event.key.toLowerCase() === "c") {
+        const selectedKey = props.currWidgetsDetails?.key;
+        const location = selectedKey && findWidget(selectedKey);
+        if (!location) return;
+        if (location.widget?.type === "qes") {
+          widgetClipboardRef.current = null;
+          return;
+        }
+
+        event.preventDefault();
+        widgetClipboardRef.current = {
+          signerId: location.signer?.Id,
+          signerObjId: location.signer?.signerObjId,
+          widget: location.widget
+        };
+        return;
+      }
+
+      if (event.key.toLowerCase() !== "v" || !widgetClipboardRef.current)
+        return;
+
+      event.preventDefault();
+      const clipboard = widgetClipboardRef.current;
+      if (clipboard.widget?.type === "qes") {
+        widgetClipboardRef.current = null;
+        return;
+      }
+      const selectedSignerId =
+        props.uniqueId ||
+        props.currWidgetsDetails?.signerId ||
+        clipboard.signerId;
+      const selectedSigner = props.uniqueId
+        ? (widgetPositions || []).find((item) => item?.Id === props.uniqueId)
+        : null;
+      const signer =
+        selectedSigner ||
+        (widgetPositions || []).find(
+          (item) =>
+            item?.Id === selectedSignerId ||
+            item?.signerObjId === clipboard.signerObjId
+        );
+
+      if (signer?.placeHolder) {
+        const pages = signer.placeHolder;
+        const pasteTarget = pasteTargetRef.current;
+        const targetPageNumber =
+          pasteTarget?.pageNumber || props.pageNumber || 1;
+        const targetPage = pages.find(
+          (page) => page.pageNumber === targetPageNumber
+        );
+        const widgetCount = pages.reduce(
+          (count, page) =>
+            count +
+            (page.pos || []).filter(
+              (item) => item?.type === clipboard.widget.type
+            ).length,
+          0
+        );
+        const pastedWidget = {
+          ...clipboard.widget,
+          ...(pasteTarget
+            ? {
+                xPosition: pasteTarget.xPosition,
+                yPosition: pasteTarget.yPosition
+              }
+            : {}),
+          key: randomId(),
+          zIndex:
+            pages
+              .flatMap((page) => page.pos || [])
+              .reduce(
+                (max, item) => Math.max(max, Number(item?.zIndex) || 0),
+                0
+              ) + 1,
+          options: {
+            ...clipboard.widget.options,
+            name: `${clipboard.widget.type}-${generateId(6)}-${widgetCount + 1}`
+          }
+        };
+        const updatedPages = targetPage
+          ? pages.map((page) =>
+              page.pageNumber === targetPageNumber
+                ? { ...page, pos: [...(page.pos || []), pastedWidget] }
+                : page
+            )
+          : [...pages, { pageNumber: targetPageNumber, pos: [pastedWidget] }];
+        setWidgetPositions(
+          widgetPositions.map((item) =>
+            item.Id === signer.Id
+              ? { ...item, placeHolder: updatedPages }
+              : item
+          )
+        );
+        props.setCurrWidgetsDetails?.({
+          ...pastedWidget,
+          pageNumber: targetPageNumber
+        });
+        pasteTargetRef.current = null;
+        return;
+      }
+
+      const pasteTarget = pasteTargetRef.current;
+      const targetPageNumber = pasteTarget?.pageNumber || props.pageNumber || 1;
+      const targetPage = (widgetPositions || []).find(
+        (page) => page.pageNumber === targetPageNumber
+      );
+      const pastedWidget = {
+        ...clipboard.widget,
+        ...(pasteTarget
+          ? {
+              xPosition: pasteTarget.xPosition,
+              yPosition: pasteTarget.yPosition
+            }
+          : {}),
+        key: randomId(),
+        options: {
+          ...clipboard.widget.options,
+          name: `${clipboard.widget.type}-${generateId(6)}-1`
+        }
+      };
+      const updatedPages = targetPage
+        ? widgetPositions.map((page) =>
+            page.pageNumber === targetPageNumber
+              ? { ...page, pos: [...(page.pos || []), pastedWidget] }
+              : page
+          )
+        : [
+            ...(widgetPositions || []),
+            { pageNumber: targetPageNumber, pos: [pastedWidget] }
+          ];
+      setWidgetPositions(updatedPages);
+      props.setCurrWidgetsDetails?.({
+        ...pastedWidget,
+        pageNumber: targetPageNumber
+      });
+      pasteTargetRef.current = null;
+    };
+
+    window.addEventListener("keydown", handleWidgetClipboard);
+    return () => window.removeEventListener("keydown", handleWidgetClipboard);
+  }, [
+    props.currWidgetsDetails,
+    props.handleDeleteWidget,
+    props.isSelfSign,
+    props.isSignYourself,
+    props.pageNumber,
+    props.pdfDetails,
+    props.placeholder,
+    props.setCurrWidgetsDetails,
+    props.setSignerPos,
+    props.setXyPosition,
+    props.signerPos,
+    props.uniqueId,
+    props.xyPosition
+  ]);
 
   // Refs for drawing Text Input widget — avoids re-rendering the full tree on
   // every pointermove event. Only isDrawing (a boolean) is kept in React state
@@ -175,15 +421,8 @@ function RenderPdf(props) {
   useEffect(() => {
     if (allPagesCount <= 1 || !props.setPageNumber) return;
     const scrollerEl = scrollRef.current;
-    // On mobile at default zoom (non-guest) the div height equals the full
-    // content height so there is no overflow and the browser viewport scrolls.
-    // We must listen on window; otherwise the scroll event never fires.
-    // mobileNoScroll is true only before scaledHeight is calculated (i.e. the
-    // very first render before page-1 loads).  At that point the div height is
-    // undefined so it expands to fill all content and the window is the scroller.
-    // Once scaledHeight is set the div has a fixed height, content overflows it,
-    // and the div itself becomes the scroll container.
-    const mobileNoScroll = isMobile && !isGuestSigner && !scaledHeight;
+    // Before a mobile viewport height is known, the window is the scroller.
+    const mobileNoScroll = isMobile && !isGuestSigner && !mobileHeight;
     if (!mobileNoScroll && !scrollerEl) return;
 
     const computeCurrentPage = () => {
@@ -269,7 +508,7 @@ function RenderPdf(props) {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allPagesCount, props.pdfLoad, scaledHeight]);
+  }, [allPagesCount, props.pdfLoad, mobileHeight]);
 
   // Scroll to a specific page when pageNumber changes externally (e.g. thumbnail click)
   const prevPageRef = useRef(props.pageNumber);
@@ -453,18 +692,26 @@ function RenderPdf(props) {
       const viewport = page.getViewport({ scale: 1 });
       const scale = containerWidth / viewport.width; // Scale to fit container width
       const scaleHeight = viewport.height * scale;
-      setScaledHeight(scaleHeight);
+      requestAnimationFrame(() => {
+        const renderedPage = props.divRef.current?.querySelector(
+          '[data-page-number="1"] .react-pdf__Page'
+        );
+        setScaledHeight(
+          renderedPage?.getBoundingClientRect().height || scaleHeight
+        );
+      });
     }
   };
 
-  // Handle drawing Text Input widget on PDF
+  const canDrawTextWidget =
+    (props.placeholder || props.isSignYourself || props.isSelfSign) &&
+    !props.pdfDetails?.[0]?.IsCompleted &&
+    !(props.isCompleted === true || props.isCompleted?.isCertificate) &&
+    !props.currWidgetsDetails?.key &&
+    !props.isDragging;
+
   const handlePointerDown = (e) => {
-    // Only allow drawing in placeholder mode when no widget is selected
-    if (
-      !props.placeholder ||
-      props.currWidgetsDetails?.key ||
-      props.isDragging
-    ) {
+    if (!canDrawTextWidget) {
       return;
     }
 
@@ -585,15 +832,18 @@ function RenderPdf(props) {
       const widgetWidth = pageWidth / (containerScale * props.scale);
       const widgetHeight = pageHeight / (containerScale * props.scale);
 
-      // Create a Text Input widget at the drawn position
+      // Create a text widget at the drawn position.
       if (props.addPositionOfSignature) {
         // If drawing on a different page, update pageNumber first
         if (drawPageNum !== props.pageNumber && props.setPageNumber) {
           props.setPageNumber(drawPageNum);
         }
-        // Simulate dropping a text input widget
         const type =
-          props?.roleName === "prefill" ? textWidget : textInputWidget;
+          props.isSignYourself ||
+          props.isSelfSign ||
+          props?.roleName === "prefill"
+            ? textWidget
+            : textInputWidget;
         const textInputItem = { text: type, type: "BOX" };
 
         const monitor = {
@@ -603,6 +853,7 @@ function RenderPdf(props) {
         };
 
         props.addPositionOfSignature(textInputItem, monitor, {
+          pageNumber: drawPageNum,
           customPosition: {
             xPosition,
             yPosition,
@@ -663,6 +914,11 @@ function RenderPdf(props) {
                       <React.Fragment key={ind}>
                         <Placeholder
                           pos={pos}
+                          isAreaSelected={widgetAreaSelection.isSelected(
+                            pos.key,
+                            data.Id,
+                            pageNum
+                          )}
                           handleWidgetResize={handleWidgetResize}
                           index={pageNum}
                           xyPosition={props.signerPos}
@@ -736,6 +992,11 @@ function RenderPdf(props) {
                     <React.Fragment key={pos.key}>
                       <Placeholder
                         pos={pos}
+                        isAreaSelected={widgetAreaSelection.isSelected(
+                          pos.key,
+                          data.Id,
+                          pageNum
+                        )}
                         setIsPageCopy={props.setIsPageCopy}
                         handleDeleteWidget={props.handleDeleteWidget}
                         handleTabDrag={props.handleTabDrag}
@@ -804,6 +1065,11 @@ function RenderPdf(props) {
                   <Placeholder
                     key={id}
                     pos={pos}
+                    isAreaSelected={widgetAreaSelection.isSelected(
+                      pos.key,
+                      undefined,
+                      pageNum
+                    )}
                     setIsPageCopy={props.setIsPageCopy}
                     handleDeleteWidget={props.handleDeleteWidget}
                     handleTabDrag={props.handleTabDrag}
@@ -861,13 +1127,20 @@ function RenderPdf(props) {
       )}
       <div
         ref={scrollRef}
+        className={isLoadRoute ? "os-pdf-load-route" : undefined}
         style={{
           position: "relative",
-          boxShadow: "rgba(17, 12, 46, 0.15) 0px 48px 100px 0px",
+          boxShadow: isLoadRoute
+            ? "none"
+            : isGuestSigner
+              ? "0 0 0 2px var(--os-stage)"
+              : "rgba(17, 12, 46, 0.15) 0px 48px 100px 0px",
           height: isMobile
-            ? isGuestSigner
-              ? window.innerHeight - 49
-              : scaledHeight
+            ? isLoadRoute
+              ? scaledHeight
+              : isGuestSigner
+                ? window.innerHeight - 49
+                : mobileHeight
             : `${window.innerHeight}px`,
           zIndex: 0,
           overflowY: "auto",
@@ -896,12 +1169,7 @@ function RenderPdf(props) {
             }
             data-pdf-transform-target
             style={{
-              cursor:
-                props.placeholder &&
-                !props.currWidgetsDetails?.key &&
-                !props.isDragging
-                  ? "crosshair"
-                  : "default",
+              cursor: canDrawTextWidget ? "crosshair" : "default",
               // ✅ top left so content expands into spacer — scroll handles horizontal
               width: props.containerWH?.width,
               transform: `scale(${props?.scale || 1})`, // ✅ both platforms
@@ -917,6 +1185,7 @@ function RenderPdf(props) {
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
+            {...widgetAreaSelection.handlers}
             onPointerLeave={() => {
               if (isDrawing) {
                 handlePointerUp();
@@ -945,6 +1214,25 @@ function RenderPdf(props) {
                 // events bubble here. Without this guard the widget's own
                 // setCurrWidgetsDetails(pos) is immediately overwritten by {}.
                 if (e.target.closest(".signYourselfBlock")) return;
+                const pageContainer = e.target.closest("[data-page-number]");
+                if (pageContainer) {
+                  const pageNumber = Number(pageContainer.dataset.pageNumber);
+                  const pageRect = pageContainer.getBoundingClientRect();
+                  const containerScale = getContainerScale(
+                    props.pdfOriginalWH,
+                    pageNumber,
+                    props.containerWH
+                  );
+                  pasteTargetRef.current = {
+                    pageNumber,
+                    xPosition:
+                      (e.clientX - pageRect.left) /
+                      (containerScale * (props.scale || 1)),
+                    yPosition:
+                      (e.clientY - pageRect.top) /
+                      (containerScale * (props.scale || 1))
+                  };
+                }
                 props.setCurrWidgetsDetails && props.setCurrWidgetsDetails({});
                 showGuidelines(false);
                 showCanvasGuidelines(false);
@@ -1025,6 +1313,40 @@ function RenderPdf(props) {
               scale={props?.scale}
               canvasContainerRef={scrollRef}
             />
+            <div
+              ref={widgetAreaSelection.overlayRef}
+              data-widget-selection-area
+              style={{
+                display: "none",
+                position: "absolute",
+                border: "1px solid #9ca3af",
+                backgroundColor: "rgba(156, 163, 175, 0.2)",
+                pointerEvents: "none",
+                zIndex: 9999
+              }}
+            />
+            {widgetAreaSelection.selection && (
+              <button
+                type="button"
+                data-widget-selection-delete
+                aria-label={`${t("delete")} (${widgetAreaSelection.selection.widgets.length})`}
+                className="op-btn op-btn-xs op-btn-error"
+                style={{
+                  position: "absolute",
+                  left: widgetAreaSelection.selection.left,
+                  top: Math.max(0, widgetAreaSelection.selection.top - 28),
+                  zIndex: 10000
+                }}
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={widgetAreaSelection.deleteSelection}
+              >
+                <i
+                  className="fa-light fa-trash-can text-xm"
+                  aria-hidden="true"
+                />
+                ({widgetAreaSelection.selection.widgets.length})
+              </button>
+            )}
             {/* Drawing rectangle overlay for Text Input widget */}
             {isDrawing && (
               <div

@@ -1,4 +1,3 @@
-import { BRAND_NAME } from "../constant/brand";
 import { useTranslation } from "react-i18next";
 import { formatDateToDdMmmYyyy } from "../constant/Utils";
 import SignerCell from "./SignerCell";
@@ -38,8 +37,8 @@ export const RenderReportCell = ({
 }) => {
   const { t } = useTranslation();
   const appName =
-    BRAND_NAME;
-  const drivename = appName === BRAND_NAME ? BRAND_NAME : "";
+    "OpenSign™";
+  const drivename = appName === "OpenSign™" ? "OpenSign™" : "";
   switch (col) {
     case "Sr.No":
       return (
@@ -51,7 +50,9 @@ export const RenderReportCell = ({
     case "Title":
       return (
         <td key={col} className="p-2 min-w-56 max-w-56">
-          <div className="font-semibold break-words">{rowData?.Name}</div>
+          <div className="font-semibold break-words" title={rowData?.Name}>
+            {rowData?.Name}
+          </div>
           {rowData?.ExpiryDate?.iso && (
             <div className="text-gray-500">
               {t("expires")} {formatDateToDdMmmYyyy(rowData?.ExpiryDate?.iso)}
@@ -61,25 +62,30 @@ export const RenderReportCell = ({
       );
     case "Reason":
       return (
-        <td
-          key={col}
-          className="p-2 text-center cursor-pointer"
-          onClick={() => handleItemClick(col, rowData?.DeclineReason)}
-        >
-          {rowData?.DeclineReason?.length > 25
-            ? rowData?.DeclineReason?.slice(0, 25) + "..."
-            : rowData?.DeclineReason || "-"}
+        <td key={col} className="p-2 text-center">
+          <button
+            type="button"
+            className="max-w-full break-words text-left underline-offset-2 hover:underline"
+            title={rowData?.DeclineReason || "-"}
+            onClick={() => handleItemClick(col, rowData?.DeclineReason)}
+          >
+            {rowData?.DeclineReason?.length > 25
+              ? rowData?.DeclineReason?.slice(0, 25) + "..."
+              : rowData?.DeclineReason || "-"}
+          </button>
         </td>
       );
     case "Note":
       return (
         <td key={col} className="p-2 text-center">
-          <p
-            className="truncate w-[100px] cursor-pointer"
+          <button
+            type="button"
+            className="truncate w-[100px] cursor-pointer text-left underline-offset-2 hover:underline"
+            title={rowData?.Note || "-"}
             onClick={() => handleItemClick(col, rowData?.Note)}
           >
             {rowData?.Note || "-"}
-          </p>
+          </button>
         </td>
       );
     case "Folder":

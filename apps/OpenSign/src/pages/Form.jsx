@@ -1,4 +1,3 @@
-import { BRAND_NAME } from "../constant/brand";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { formJson } from "../json/FormJson";
@@ -18,6 +17,8 @@ import {
   getFileAsArrayBuffer,
   removeTrailingSegment
 } from "../constant/Utils";
+import { normalizeParseObjectResult } from "../utils/parseResult";
+import { isCreditQuotaError } from "../utils/creditErrors";
 import { PDFDocument } from "pdf-lib";
 import axios from "axios";
 import {
@@ -52,7 +53,7 @@ function Form() {
 
 const Forms = (props) => {
   const appName =
-    BRAND_NAME;
+    "OpenSign™";
   const { t } = useTranslation();
   const abortController = new AbortController();
   const inputFileRef = useRef(null);
@@ -499,7 +500,13 @@ const Forms = (props) => {
             object.set("SenderMail", senderMail);
           }
         }
-        const res = await object.save();
+        const savedObject =
+          props.title === "New Template"
+            ? await object.save()
+            : await Parse.Cloud.run("createdocumentfromapp", {
+                document: object.toJSON()
+              });
+        const res = normalizeParseObjectResult(savedObject);
         if (res) {
           setSigners([]);
           setBcc([]);
@@ -542,6 +549,11 @@ const Forms = (props) => {
           setIsAlert({
             type: "danger",
             message: t("only-15-reminder-allowed")
+          });
+        } else if (isCreditQuotaError(err?.message)) {
+          setIsAlert({
+            type: "danger",
+            message: t("quota-err-quicksend")
           });
         } else {
           setIsAlert({
@@ -1200,6 +1212,29 @@ const Forms = (props) => {
                           isAddYourSelfCheckbox
                         />
                       )}
+                      {formData?.autoreminder === true &&
+                        props.title !== "New Template" && (
+                          <div className="text-xs mt-2">
+                            <label className="block">
+                              {t("remind-once")}
+                              <span className="text-red-500 text-[13px]">
+                                *
+                              </span>
+                            </label>
+                            <input
+                              type="number"
+                              value={formData.remindOnceInEvery}
+                              name="remindOnceInEvery"
+                              className="op-input op-input-bordered op-input-sm focus:outline-none hover:border-base-content w-full text-xs"
+                              onChange={handleStrInput}
+                              onInvalid={(e) => reminderCustomWarning(e)}
+                              onInput={(e) => e.target.setCustomValidity("")}
+                              min={1}
+                              max={formData?.TimeToCompleteDays}
+                              required
+                            />
+                          </div>
+                        )}
                     </>
                   )}
                 </div>
@@ -1216,27 +1251,6 @@ const Forms = (props) => {
                 )}
                 {isAdvanceOpt && (
                   <div className="card bg-base-100 rounded-box p-3 flex-grow-0 w-full">
-                    {formData?.autoreminder === true &&
-                      props.title !== "New Template" && (
-                        <div className="text-xs mt-2">
-                          <label className="block">
-                            {t("remind-once")}
-                            <span className="text-red-500 text-[13px]">*</span>
-                          </label>
-                          <input
-                            type="number"
-                            value={formData.remindOnceInEvery}
-                            name="remindOnceInEvery"
-                            className="op-input op-input-bordered op-input-sm focus:outline-none hover:border-base-content w-full text-xs"
-                            onChange={handleStrInput}
-                            onInvalid={(e) => reminderCustomWarning(e)}
-                            onInput={(e) => e.target.setCustomValidity("")}
-                            min={1}
-                            max={formData?.TimeToCompleteDays}
-                            required
-                          />
-                        </div>
-                      )}
                     <span className="font-[400] mt-2">{t("form-title-2")}</span>
                     <div className="text-xs mt-3">
                       <label className="block">
@@ -1439,6 +1453,7 @@ const Forms = (props) => {
               </div>
             </div>
           </form>
+
         </>
       )}
     </div>

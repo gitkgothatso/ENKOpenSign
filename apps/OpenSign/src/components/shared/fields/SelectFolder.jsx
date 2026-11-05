@@ -1,4 +1,3 @@
-import { BRAND_NAME } from "../../../constant/brand";
 import React, { useEffect, useState } from "react";
 import Parse from "parse";
 import CreateFolder from "./CreateFolder";
@@ -8,8 +7,8 @@ import { useTranslation } from "react-i18next";
 
 const SelectFolder = ({ required, onSuccess, folderCls, isReset }) => {
   const appName =
-    BRAND_NAME;
-  const drivename = appName === BRAND_NAME ? BRAND_NAME : "";
+    "OpenSign™";
+  const drivename = appName === "OpenSign™" ? "OpenSign™" : "";
   const { t } = useTranslation();
   const [isOpen, SetIsOpen] = useState(false);
   const [clickFolder, setClickFolder] = useState("");

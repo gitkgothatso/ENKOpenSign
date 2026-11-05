@@ -12,7 +12,7 @@ deploy/
 ├── bin/enk-sign              install / upgrade / backup CLI
 └── (created per instance, git-ignored)
     ├── .env                  settings and secrets
-    ├── config/brand/         logo.svg, favicon.svg, theme.css   → served at /brand/
+    ├── config/brand/         logo.svg, favicon.svg (served at /brand/), theme.json, runtime.json
     ├── config/email/         verification and password-reset templates
     ├── config/certs/         optional client TLS certificate
     └── backups/
@@ -34,8 +34,8 @@ cd ENKOpenSign/deploy
 # 2. Generate .env with a master key and a self-signed document-signing certificate
 bin/enk-sign init
 
-# 3. Edit .env: ENK_VERSION, PUBLIC_URL, SITE_ADDRESS, BRAND_NAME, SMTP_* (see comments in the file)
-#    and drop the client's logo.svg / favicon.svg / theme.css into config/brand/
+# 3. Edit .env: ENK_VERSION, PUBLIC_URL, SITE_ADDRESS, BRAND_KEY, BRAND_NAME, SMTP_* (see comments in the file)
+#    and drop the client's logo.svg / favicon.svg / theme.json into config/brand/
 
 # 4. Start and create the first administrator
 bin/enk-sign up
@@ -65,26 +65,33 @@ client and run `bin/enk-sign up` again.
 
 ## Branding
 
+Built on OpenSign's own white-label support: `bin/enk-sign up` turns the settings below into the web
+app's runtime config (`APP_RUNTIME_CONFIG_BASE64`) and the server's `APP_*` brand variables.
+
 | Setting / file | Effect |
 |---|---|
-| `BRAND_NAME` | App name in the UI, page titles, emails and the digital signature |
+| `BRAND_KEY` (required) | Slug identifying the client, e.g. `acme-sign`. Any value but `opensign` switches off OpenSign's hosted defaults: Google Analytics tags, OpenSign SSO/Google sign-in, socials, docs links, app switcher |
+| `BRAND_NAME` | Product name in the UI, page titles, emails and the digital signature |
 | `config/brand/logo.svg` + `BRAND_LOGO_URL=/brand/logo.svg` | Logo in the app |
 | `config/brand/favicon.svg` + `BRAND_FAVICON_URL=/brand/favicon.svg` | Browser tab icon |
-| `config/brand/theme.css` | DaisyUI colour overrides (below) |
+| `config/brand/theme.json` | Colours (below) |
 | `EMAIL_LOGO_URL` | Logo in emails; must be an absolute URL, e.g. `https://sign.client.com/brand/logo.png` (PNG renders in more mail clients than SVG) |
 | `config/email/*` | Verification and password-reset emails |
-| `SUPPORT_EMAIL`, `COMPLAINTS_EMAIL`, `HIDE_SOCIAL` | Contact details and OpenSign social links |
+| `SUPPORT_EMAIL`, `COMPLAINTS_EMAIL` | Contact addresses in the app and in email footers |
+| `SOURCE_URL` | Repository the footer version links to (AGPL source offer) |
+| `config/brand/runtime.json` | Optional overrides merged into the runtime config last, e.g. `{"features": {"passkeys": true}}` |
 
-`theme.css` sets DaisyUI colour variables as OKLCH (`lightness% chroma hue`) for the light and dark themes:
+`theme.json` uses DaisyUI colour names with hex values, per theme:
 
-```css
-html[data-theme="opensigncss"], html[data-theme="opensigndark"] {
-  --p: 78.37% 0.1587 72.99;   /* primary (buttons, links)  #F5A623 */
-  --pc: 25.59% 0.0661 255.49; /* text on primary            #0A2342 */
+```json
+{
+  "light": { "primary": "#0a2342", "primary-content": "#ffffff", "accent": "#f5a623", "base-100": "#ffffff" },
+  "dark": {},
+  "emailAccent": "#f5a623"
 }
 ```
 
-Branding changes need `bin/enk-sign up` (containers re-read config at start), not a new image.
+Branding changes need `bin/enk-sign up` (it regenerates the runtime config; containers re-read it at start), not a new image.
 
 ## Operations
 

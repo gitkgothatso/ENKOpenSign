@@ -1,4 +1,3 @@
-import { BRAND_NAME } from "../constant/brand";
 import { useEffect, useState } from "react";
 import Loader from "../primitives/Loader";
 import Parse from "parse";
@@ -8,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { emailRegex } from "../constant/const";
 const UpdateExistUserAdmin = () => {
   const appName =
-    BRAND_NAME;
+    "OpenSign™";
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [formdata, setFormdata] = useState({ email: "", masterkey: "" });

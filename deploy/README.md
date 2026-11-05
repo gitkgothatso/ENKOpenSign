@@ -63,8 +63,10 @@ client and run `bin/enk-sign up` again.
   the client trust it), or put the client's certificate in `config/certs/` and set
   `CADDY_TLS=tls /certs/cert.pem /certs/key.pem`.
 - Email through the client's relay (`SMTP_*`).
-- **Air-gapped:** download `enk-sign-images-<version>.tar.gz` (+ `.sha256`) from the GitHub release, copy it
-  with the bundle, then `bin/enk-sign load-images enk-sign-images-<version>.tar.gz` before `up`.
+- **Air-gapped:** download every `enk-sign-images-<version>.tar.gz.part-NN` file and the `.sha256` from the GitHub
+  release (the bundle is split to stay under GitHub's 2 GiB file limit), copy them into one folder on the host
+  with the bundle, then `bin/enk-sign load-images enk-sign-images-<version>.tar.gz.part-00` before `up`; it
+  checks the checksum of the joined archive.
 
 ## Branding
 

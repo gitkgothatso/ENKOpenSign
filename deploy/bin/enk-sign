@@ -261,15 +261,25 @@ console.log(`Administrator ${process.env.EMAIL} created for ${process.env.COMPAN
 '
 }
 
+# Accepts the whole archive or its release parts (<bundle>.part-00, -01, ...), in the same folder.
 cmd_load_images() {
-  local tarball=${1:-}
-  [[ -f $tarball ]] || die "usage: $0 load-images <enk-sign-images-<version>.tar.gz>"
-  if [[ -f $tarball.sha256 ]]; then
-    info "verifying checksum"
-    (cd "$(dirname "$tarball")" && sha256sum -c "$(basename "$tarball").sha256")
+  local arg=${1:-} base parts=() want got
+  [[ -n $arg ]] || die "usage: $0 load-images <enk-sign-images-<version>.tar.gz or its .part-00>"
+  base=${arg%.part-*}
+  if [[ -f $base ]]; then
+    parts=("$base")
+  else
+    parts=("$base".part-*)
+    [[ -f ${parts[0]} ]] || die "neither $base nor $base.part-* found"
+  fi
+  if [[ -f $base.sha256 ]]; then
+    info "verifying checksum of ${#parts[@]} file(s)"
+    want=$(awk '{print $1}' "$base.sha256")
+    got=$(cat "${parts[@]}" | sha256sum | awk '{print $1}')
+    [[ $want == "$got" ]] || die "checksum mismatch: download the bundle again"
   fi
   info "loading images"
-  gunzip -c "$tarball" | docker load
+  cat "${parts[@]}" | gunzip | docker load
 }
 
 usage() {
@@ -284,7 +294,7 @@ Usage: $0 <command>
   restore <dir>        restore a backup made by 'backup'
   upgrade <version>    back up, then switch to another release
   rollback             return to the version before the last upgrade
-  load-images <tar>    load an offline image bundle (air-gapped installs)
+  load-images <file>   load an offline image bundle or its .part-00 (air-gapped installs)
   down                 stop the stack (data volumes are kept)
 EOF
 }

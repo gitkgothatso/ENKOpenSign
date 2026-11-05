@@ -1,6 +1,7 @@
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import "./styles/dark-theme-improvements.css";
+import "./styles/enk-brand.css";
 import App from "./App";
 import { showUpgradeProgress, hideUpgradeProgress } from "./utils";
 import { Provider } from "react-redux";
@@ -11,7 +12,10 @@ import { serverUrl_fn } from "./constant/appinfo";
 import { appInfo } from "./constant/appinfo";
 import "./i18n";
 import { ScrollProvider } from "./context/ScrollPdfContext";
-import { applyRuntimeFont } from "./constant/brandPresentation";
+import {
+  applyDeploymentBranding,
+  applyRuntimeFont
+} from "./constant/brandPresentation";
 import { getRuntimeConfig } from "./constant/runtimeConfig";
 import {
   getLocalQaUser,
@@ -33,7 +37,13 @@ if (
 
 const localQaIdentityActive = initializeLocalQaIdentity();
 const startupRuntimeConfig = getRuntimeConfig();
-applyRuntimeFont(startupRuntimeConfig);
+// White-label (ENK): the public code never applies the runtime brand (theme, logo,
+// favicon); do it at startup for custom brands and keep OpenSign's path unchanged.
+if (startupRuntimeConfig.brandKey !== "opensign") {
+  applyDeploymentBranding(appInfo, startupRuntimeConfig);
+} else {
+  applyRuntimeFont(startupRuntimeConfig);
+}
 document.documentElement.setAttribute(
   "data-brand",
   startupRuntimeConfig.brandKey || "opensign"

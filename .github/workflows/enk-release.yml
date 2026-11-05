@@ -81,8 +81,14 @@ jobs:
           owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           images="$REGISTRY/$owner/enk-sign-web:$VERSION $REGISTRY/$owner/enk-sign-server:$VERSION mongo:8.0 caddy:2"
           for i in $images; do docker pull "$i"; done
-          docker save $images | gzip > "enk-sign-images-$VERSION.tar.gz"
-          sha256sum "enk-sign-images-$VERSION.tar.gz" > "enk-sign-images-$VERSION.tar.gz.sha256"
+          bundle="enk-sign-images-$VERSION.tar.gz"
+          docker save $images | gzip > "$bundle"
+          sha256sum "$bundle" > "$bundle.sha256"
+          # GitHub release assets must be under 2 GiB: publish the bundle in parts
+          # (bin/enk-sign load-images joins them and checks the whole-archive checksum).
+          split -b 1900M -d -a 2 "$bundle" "$bundle.part-"
+          rm "$bundle"
+          ls -l "$bundle".*
 
       - name: Publish GitHub Release
         env:
@@ -91,4 +97,4 @@ jobs:
           gh release view "$VERSION" -R "${{ github.repository }}" >/dev/null 2>&1 \
             || gh release create "$VERSION" -R "${{ github.repository }}" --title "$VERSION" --generate-notes --verify-tag
           gh release upload "$VERSION" -R "${{ github.repository }}" --clobber \
-            "enk-sign-images-$VERSION.tar.gz" "enk-sign-images-$VERSION.tar.gz.sha256"
+            enk-sign-images-"$VERSION".tar.gz.part-* "enk-sign-images-$VERSION.tar.gz.sha256"

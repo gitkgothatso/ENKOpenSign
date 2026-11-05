@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import { saveTourStatus } from "../utils/tourStatus";
 import Parse from "parse";
 import "../styles/signature.css";
 import { PDFDocument } from "pdf-lib";
@@ -9,6 +10,7 @@ import Tour from "../primitives/Tour";
 import { useLocation, useParams } from "react-router";
 import SignerListPlace from "../components/pdf/SignerListPlace";
 import Header from "../components/pdf/PdfHeader";
+import useWidgetHistory from "../hook/useWidgetHistory";
 import ShareButton from "../primitives/ShareButton";
 import {
   pdfNewWidthFun,
@@ -96,7 +98,8 @@ function PlaceHolderSign() {
   const [xySignature, setXYSignature] = useState({});
   const [dragKey, setDragKey] = useState();
   const [signersdata, setSignersData] = useState([]);
-  const [signerPos, setSignerPos] = useState([]);
+  const [signerPos, setSignerPos, recordWidgetUpdate, widgetHistory] =
+    useWidgetHistory();
   const [isSelectListId, setIsSelectId] = useState();
   const [isSendAlert, setIsSendAlert] = useState({});
   const [isSend, setIsSend] = useState(false);
@@ -162,7 +165,7 @@ function PlaceHolderSign() {
   const [owner, setOwner] = useState({});
   const [docTitle, setDocTitle] = useState("");
   const [isEditDoc, setIsEditDoc] = useState(false);
-  const isMobile = window.innerWidth < 767;
+  const isMobile = windowSize.width > 0 && windowSize.width < 767;
   const currentUser = localStorage.getItem(
     `Parse/${localStorage.getItem("parseAppId")}/currentUser`
   );
@@ -664,19 +667,20 @@ function PlaceHolderSign() {
             x.Id === uniqueId ? { ...x, placeHolder: updatePlace } : x
           );
 
-          setSignerPos(updatesignerPos);
+          recordWidgetUpdate(updatesignerPos);
         } else {
           //condition for prefill role to attach prefill widget on multiple page first time there are no any prefill widget exist
           if (roleName === "prefill") {
             //if condition for prefill role only prefill object exist and placeholder empty then add prefill widget in placeholder
             if (filterSignerPos) {
-              const addPrefillData =
-                filterSignerPos && filterSignerPos?.placeHolder;
-              addPrefillData.push(placeHolder);
+              const addPrefillData = [
+                ...(filterSignerPos.placeHolder || []),
+                placeHolder
+              ];
               const updatePrefillPos = signerPos.map((x) =>
                 x.Role === "prefill" ? { ...x, placeHolder: addPrefillData } : x
               );
-              setSignerPos(updatePrefillPos);
+              recordWidgetUpdate(updatePrefillPos);
             } //else condition if there are no prefill role exist in array then add prefill widget in placeholder
             else {
               const prefillTextWidget = {
@@ -687,9 +691,9 @@ function PlaceHolderSign() {
                 Role: "prefill",
                 Id: uniqueId
               };
-              const xyPosition = signerPos || [];
+              const xyPosition = [...(signerPos || [])];
               xyPosition.unshift(prefillTextWidget);
-              setSignerPos(xyPosition);
+              recordWidgetUpdate(xyPosition);
             }
           } else {
             //else condition to add placeholder widgets on multiple page first time for signers
@@ -700,7 +704,7 @@ function PlaceHolderSign() {
                   ? { ...x, placeHolder: [placeHolder] }
                   : x
             );
-            setSignerPos(updatesignerPos);
+            recordWidgetUpdate(updatesignerPos);
           }
         }
 
@@ -793,7 +797,7 @@ function PlaceHolderSign() {
               }
               return obj;
             });
-            setSignerPos(newUpdateSigner);
+            recordWidgetUpdate(newUpdateSigner);
           }
         }
       }
@@ -830,7 +834,7 @@ function PlaceHolderSign() {
             }
             return obj;
           });
-          setSignerPos(newUpdateSigner);
+          recordWidgetUpdate(newUpdateSigner);
         } else {
           const getRemainPage = filterSignerPos[0].placeHolder.filter(
             (data) => data.pageNumber !== effectivePageNumber
@@ -847,7 +851,7 @@ function PlaceHolderSign() {
             let signerupdate = [];
             signerupdate = signerPos.filter((data) => data.Id !== Id);
             signerupdate.push(newUpdatePos[0]);
-            setSignerPos(signerupdate);
+            recordWidgetUpdate(signerupdate);
           } else {
             const updatedData = signerPos
               .filter((item) => !(item.Id === Id && item.Role === "prefill")) // Remove prefill object
@@ -860,7 +864,7 @@ function PlaceHolderSign() {
                 }
                 return item;
               });
-            setSignerPos(updatedData);
+            recordWidgetUpdate(updatedData);
           }
         }
       }
@@ -988,10 +992,24 @@ function PlaceHolderSign() {
       (s) => !utils?.hasSignatureWidget(s)
     );
 
+    let canSaveWithoutSignatureWidget = isPlaceholderExist;
+
     //checking if there are any signer list which do not have signture widget then show signers name on tour messages
     if (unassignedWidget.length > 0) {
-      const getSigner = unassignedWidget.map((x) => {
-        return signersdata.find((y) => y.Id === x.Id).Name;
+      const getSigner = unassignedWidget.map((x, index) => {
+        const signer = signersdata.find(
+          (y) =>
+            y.Id === x.Id || (x.signerObjId && y.objectId === x.signerObjId)
+        );
+        return (
+          signer?.Name ||
+          signer?.Role ||
+          signer?.Email ||
+          signersdata[index]?.Name ||
+          signersdata[index]?.Role ||
+          x.Role ||
+          x.Id
+        );
       });
       const signerName = getSigner.join(", ");
       setSignersName(signerName);
@@ -1005,7 +1023,7 @@ function PlaceHolderSign() {
       setUnSignedWidgetId(unfilledTextWidgetId);
     } else if (signersdata?.length === 0) {
       alert(t("atleast-one-recipient-alert"));
-    } else if (isPlaceholderExist && unassignedWidget.length === 0) {
+    } else if (canSaveWithoutSignatureWidget && unassignedWidget.length === 0) {
       const IsSignerNotExist = filterPrefill?.filter((x) => !x.signerObjId);
       // below condition is used to hightlight the widget whose value is not provided by signer
       if (IsSignerNotExist && IsSignerNotExist?.length > 0) {
@@ -1028,7 +1046,8 @@ function PlaceHolderSign() {
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signerPos, signersdata, signatureType, pdfBase64Url]);
-  // `autosavedetails` is used to save doc details after every 2 sec when changes are happern in placeholder like drag-drop widgets, remove signers
+
+  //`autosavedetails` is used to save doc details after every 2 sec when changes are happern in placeholder like drag-drop widgets, remove signers
   const autosavedetails = async () => {
     const signers = signersdata?.reduce((acc, x) => {
       if (x.objectId) {
@@ -1174,7 +1193,7 @@ function PlaceHolderSign() {
       let signPdf = `${hostUrl}/login/${encodeBase64}`;
       shareLinkList.push({
         signerEmail: signerMail[i].Email,
-        url: signPdf
+        url: signPdf,
       });
     }
     return shareLinkList.map((data, ind) => {
@@ -1566,34 +1585,15 @@ function PlaceHolderSign() {
     setPlaceholderTour(false);
     setIsDontShow(true);
     if (!checkTourStatus && isDontShow) {
-      let updatedTourStatus = [];
-      if (tourStatus.length > 0) {
-        updatedTourStatus = [...tourStatus];
-        const placeholderIndex = tourStatus.findIndex(
-          (obj) => obj["placeholder"] === false || obj["placeholder"] === true
-        );
-        if (placeholderIndex !== -1) {
-          updatedTourStatus[placeholderIndex] = { placeholder: true };
-        } else {
-          updatedTourStatus.push({ placeholder: true });
-        }
-      } else {
-        updatedTourStatus = [{ placeholder: true }];
-      }
       try {
-        await axios.put(
-          `${localStorage.getItem(
-            "baseUrl"
-          )}classes/contracts_Users/${signerUserId}`,
-          { TourStatus: updatedTourStatus },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "X-Parse-Application-Id": localStorage.getItem("parseAppId"),
-              sessionToken: localStorage.getItem("accesstoken")
-            }
-          }
-        );
+        await saveTourStatus({
+          tourStatus,
+          key: "placeholder",
+          serverUrl: localStorage.getItem("baseUrl"),
+          appId: localStorage.getItem("parseAppId"),
+          sessionToken: localStorage.getItem("accesstoken"),
+          userId: signerUserId
+        });
         setCheckTourStatus(true);
       } catch (err) {
         console.log("axois err ", err);
@@ -1814,6 +1814,9 @@ function PlaceHolderSign() {
 
   const handleEditDocumentForm = async (data) => {
     setIsEditDoc(false);
+    if (Array.isArray(data?.QualifiedSignatureConfig)) {
+      setQesDocConfig(data.QualifiedSignatureConfig);
+    }
     const updateDocument = pdfDetails.map((x) => {
       return { ...x, ...data };
     });
@@ -1869,6 +1872,8 @@ function PlaceHolderSign() {
         ...Bcc,
         ...Cc,
         ...RedirectUrl,
+        QualifiedSignatureConfig:
+          updateDocument?.[0]?.QualifiedSignatureConfig || [],
         AllowModifications: updateDocument?.[0]?.AllowModifications || false
       };
       const updateTemplateObj = new Parse.Object("contracts_Document");
@@ -1889,7 +1894,7 @@ function PlaceHolderSign() {
       ) : handleError ? (
         <HandleError handleError={handleError} />
       ) : (
-        <div className="relative op-card overflow-hidden flex flex-col md:flex-row justify-between bg-base-300">
+        <div className="os-editor-artboard relative op-card overflow-hidden flex flex-col md:flex-row justify-between bg-base-300">
           {isUiLoading && (
             <div className="absolute h-full w-full flex flex-col justify-center items-center z-[999] bg-[#e6f2f2]/80">
               <Loader />
@@ -1919,6 +1924,7 @@ function PlaceHolderSign() {
             isOpen={isSendAlert.mssg === "prefill"}
           />
           <Tour
+            key={`signature-widget-${signersName}`}
             onRequestClose={() => handleCloseSendmailModal()}
             steps={signatureWidgetTour}
             isOpen={isSendAlert?.mssg === "sure" && true}
@@ -1939,7 +1945,7 @@ function PlaceHolderSign() {
             pdfDetails={pdfDetails}
           />
           {/* pdf render view */}
-          <div className="w-full md:w-[57%] flex mr-4">
+          <div className="os-pdf-stage w-full md:w-[57%] flex mr-4">
             <PdfTools
               clickOnZoomIn={clickOnZoomIn}
               clickOnZoomOut={clickOnZoomOut}
@@ -1962,6 +1968,7 @@ function PlaceHolderSign() {
               {/* this modal is used show send mail  message and after send mail success message */}
               <ModalUi
                 isOpen={isSend}
+                portalToBody
                 title={t(
                   utils.mailModalHead(
                     pdfDetails?.[0]?.SendinOrder,
@@ -2127,7 +2134,7 @@ function PlaceHolderSign() {
                 isPageCopy={isPageCopy}
                 setIsPageCopy={setIsPageCopy}
                 xyPosition={signerPos}
-                setXyPosition={setSignerPos}
+                setXyPosition={recordWidgetUpdate}
                 allPages={allPages}
                 pageNumber={currWidgetsDetails?.pageNumber || pageNumber}
                 signKey={currWidgetsDetails?.key}
@@ -2187,6 +2194,7 @@ function PlaceHolderSign() {
 
               {/* pdf header which contain funish back button */}
               <Header
+                widgetHistory={widgetHistory}
                 completeBtnTitle={t("next")}
                 isPlaceholder={true}
                 pageNumber={pageNumber}
@@ -2235,7 +2243,7 @@ function PlaceHolderSign() {
                     handleStop={handleStop}
                     setPdfLoad={setPdfLoad}
                     pdfLoad={pdfLoad}
-                    setSignerPos={setSignerPos}
+                    setSignerPos={recordWidgetUpdate}
                     containerWH={containerWH}
                     setIsResize={setIsResize}
                     isResize={isResize}
@@ -2276,7 +2284,7 @@ function PlaceHolderSign() {
           </div>
 
           {/* signature button */}
-          <div className="w-full md:w-[23%] bg-base-100 overflow-y-auto hide-scrollbar">
+          <div className="os-recipient-rail w-full md:w-[23%] bg-base-100 overflow-y-auto hide-scrollbar">
             <div className={`max-h-screen`}>
               {isMobile ? (
                 <div>

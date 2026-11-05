@@ -1,10 +1,10 @@
-import { BRAND_NAME, brand } from "../../../../constant/brand";
+import { getRuntimeConfig } from "../../../../constant/runtimeConfig";
 import { TEditorConfiguration } from "../../documents/editor/core";
 
 const getCompletionEmail = (
 ): TEditorConfiguration => {
   const appName =
-    BRAND_NAME;
+    getRuntimeConfig().productName;
 
   const logoBlock =
         {
@@ -17,7 +17,7 @@ const getCompletionEmail = (
               props: {
                 width: null,
                 height: 50,
-                url: brand.emailLogoUrl,
+                url: "https://qikinnovation.ams3.digitaloceanspaces.com/logo.png",
                 alt: "logo",
                 linkHref: null,
                 contentAlignment: "middle"

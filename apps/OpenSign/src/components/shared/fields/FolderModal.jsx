@@ -1,4 +1,4 @@
-import { BRAND_NAME } from "../../../constant/brand";
+import { getRuntimeConfig } from "../../../constant/runtimeConfig";
 import React, { useEffect, useState } from "react";
 import Parse from "parse";
 import CreateFolder from "./CreateFolder";
@@ -8,8 +8,8 @@ import { useTranslation } from "react-i18next";
 const FolderModal = (props) => {
   const { t } = useTranslation();
   const appName =
-    BRAND_NAME;
-  const drivename = appName === BRAND_NAME ? BRAND_NAME : "";
+    getRuntimeConfig().productName;
+  const drivename = appName === getRuntimeConfig().productName ? getRuntimeConfig().productName : "";
   const [clickFolder, setClickFolder] = useState("");
   const [folderList, setFolderList] = useState([]);
   const [tabList, setTabList] = useState([]);

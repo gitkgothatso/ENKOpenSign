@@ -1,8 +1,12 @@
-import { BRAND_NAME } from "../constant/brand";
+import { getRuntimeConfig } from "../constant/runtimeConfig";
 import { useLocation, matchPath } from "react-router";
 import { useTranslation } from "react-i18next";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useManifestUrl } from "../hook/useManifestUrl";
+import {
+  BRAND_PRESENTATION_EVENT,
+  getBrowserMetadata
+} from "../constant/brandPresentation";
 
 const TITLE_MAP = {
   "/": "login",
@@ -58,9 +62,20 @@ function resolveTitle(pathname, override) {
 export default function Title() {
   const { pathname, state } = useLocation();
   const { t } = useTranslation();
+  const [, setBrandVersion] = useState(0);
+  useEffect(() => {
+    const updateBrand = () => setBrandVersion((version) => version + 1);
+    window.addEventListener(BRAND_PRESENTATION_EVENT, updateBrand);
+    window.addEventListener("storage", updateBrand);
+    return () => {
+      window.removeEventListener(BRAND_PRESENTATION_EVENT, updateBrand);
+      window.removeEventListener("storage", updateBrand);
+    };
+  }, []);
   const appName =
-    BRAND_NAME;
-  const logo = useMemo(() => localStorage.getItem("favicon"), []);
+    getRuntimeConfig().productName;
+  const logo = localStorage.getItem("favicon");
+  const { metaDescription, themeColor, backgroundColor } = getBrowserMetadata();
   const prefix = useMemo(
     () => resolveTitle(pathname, state?.title),
     [pathname, state?.title]
@@ -69,12 +84,17 @@ export default function Title() {
     () => (prefix ? `${t(prefix)} - ${appName}` : appName),
     [t, prefix, appName]
   );
-  const manifestUrl = useManifestUrl(appName, logo);
+  const manifestUrl = useManifestUrl(
+    appName,
+    logo,
+    themeColor,
+    backgroundColor
+  );
 
   return (
     <>
       <title>{title}</title>
-      <meta name="description" content={title} />
+      <meta name="description" content={metaDescription || title} />
       {logo && <link rel="icon" type="image/png" href={logo} />}
       <link rel="manifest" href={manifestUrl} />
     </>

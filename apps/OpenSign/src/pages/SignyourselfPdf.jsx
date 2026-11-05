@@ -1,13 +1,14 @@
-import { BRAND_NAME } from "../constant/brand";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { getRuntimeConfig } from "../constant/runtimeConfig";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { PDFDocument } from "pdf-lib";
 import "../styles/signature.css";
 import Parse from "parse";
 import Confetti from "react-confetti";
-import axios from "axios";
+import { saveTourStatus } from "../utils/tourStatus";
 import RenderAllPdfPage from "../components/pdf/RenderAllPdfPage";
 import EmailComponent from "../components/pdf/EmailComponent";
 import WidgetComponent from "../components/pdf/WidgetComponent";
+import PdfDeclineModal from "../primitives/PdfDeclineModal";
 import {
   getTenantDetails,
   contractDocument,
@@ -37,14 +38,13 @@ import {
   addWidgetSelfsignOptions,
   getOriginalWH,
   signatureTypes,
-  isEmptyValue,
-  flattenPdf,
-  base64ToArrayBuffer
+  isEmptyValue
 } from "../constant/Utils";
 import { useParams } from "react-router";
 import Tour from "../primitives/Tour";
 import Signedby from "../components/pdf/Signedby";
 import Header from "../components/pdf/PdfHeader";
+import useWidgetHistory from "../hook/useWidgetHistory";
 import RenderPdf from "../components/pdf/RenderPdf";
 import PlaceholderCopy from "../components/pdf/PlaceholderCopy";
 import DropdownWidgetOption from "../components/pdf/DropdownWidgetOption";
@@ -87,7 +87,7 @@ function SignYourSelf() {
   const { scrollRef } = useScroll();
   const isShowModal = useSelector((state) => state.widget.isShowModal);
   const appName =
-    BRAND_NAME;
+    getRuntimeConfig().productName;
   const divRef = useRef(null);
   const nodeRef = useRef(null);
   const pdfRef = useRef();
@@ -95,7 +95,8 @@ function SignYourSelf() {
   const [pdfDetails, setPdfDetails] = useState([]);
   const [allPages, setAllPages] = useState(null);
   const [pdfUrl, setPdfUrl] = useState();
-  const [xyPosition, setXyPosition] = useState([]);
+  const [xyPosition, setXyPosition, recordWidgetUpdate, widgetHistory] =
+    useWidgetHistory(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [isEmail, setIsEmail] = useState(false);
   const [signBtnPosition, setSignBtnPosition] = useState([]);
@@ -134,6 +135,7 @@ function SignYourSelf() {
   const [pdfLoad, setPdfLoad] = useState(false);
   const [isAlert, setIsAlert] = useState({ isShow: false, alertMessage: "" });
   const [isDontShow, setIsDontShow] = useState(true);
+  const [isDeclined, setIsDeclined] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isCelebration, setIsCelebration] = useState(false);
   const [pdfArrayBuffer, setPdfArrayBuffer] = useState("");
@@ -180,6 +182,7 @@ function SignYourSelf() {
     );
   const jsonSender = JSON.parse(senderUser);
 
+
   useEffect(() => {
     dispatch(resetWidgetState([]));
     if (documentId) {
@@ -218,6 +221,12 @@ function SignYourSelf() {
       if (documentData && documentData.length > 0) {
         setOwner(documentData?.[0]?.ExtUserPtr);
         setPdfDetails(documentData);
+        // Declined/revoked check — show decline modal and let PDF load behind it
+        if (documentData[0]?.IsDeclined) {
+          setIsDeclined(true);
+          // Don't return — let the function continue to load the PDF so content
+          // renders behind the decline modal (same pattern as SelfSign/PdfRequestFiles)
+        }
         const placeholders =
           documentData[0]?.Placeholders?.length > 0
             ? documentData[0]?.Placeholders
@@ -347,26 +356,19 @@ function SignYourSelf() {
     }
   };
   //function for setting position after drop signature button over pdf
-  const addPositionOfSignature = (item, monitor) => {
+  const addPositionOfSignature = (item, monitor, customOptions) => {
+    const targetPageNumber = customOptions?.pageNumber ?? pageNumber;
     setCurrWidgetsDetails({});
     const key = randomId();
     let dropData = [];
     let dropObj = {};
     let filterDropPos = xyPosition?.filter(
-      (data) => data.pageNumber === pageNumber
+      (data) => data.pageNumber === targetPageNumber
     );
     const dragTypeValue = item?.text ? item.text : monitor.type;
-    const widgetValue = getWidgetValue(dragTypeValue);
-    const widgetTypeExist = [
-      "name",
-      "company",
-      "job title",
-      "email",
-      cellsWidget
-    ].includes(dragTypeValue);
     const containerScale = getContainerScale(
       pdfOriginalWH,
-      pageNumber,
+      targetPageNumber,
       containerWH
     );
     const widgetWidth =
@@ -374,7 +376,27 @@ function SignYourSelf() {
     const widgetHeight =
       defaultWidthHeight(dragTypeValue).height * containerScale;
     //adding and updating drop position in array when user drop signature button in div
-    if (item === "onclick") {
+    if (customOptions?.customPosition) {
+      const { xPosition, yPosition, width, height } =
+        customOptions.customPosition;
+      dropObj = {
+        xPosition,
+        yPosition,
+        key,
+        type: dragTypeValue,
+        scale: containerScale,
+        Width: width,
+        Height: height,
+        options: addWidgetSelfsignOptions(
+          dragTypeValue,
+          getWidgetValue,
+          owner,
+          xyPosition,
+          true
+        )
+      };
+      dropData.push(dropObj);
+    } else if (item === "onclick") {
       // Use the current page container (id="container") so that the
       // height reflects one page, not the entire multi-page document.
       const containerEl =
@@ -461,19 +483,19 @@ function SignYourSelf() {
     }
     if (filterDropPos?.length > 0) {
       const index = xyPosition?.findIndex((object) => {
-        return object.pageNumber === pageNumber;
+        return object.pageNumber === targetPageNumber;
       });
       const updateData = filterDropPos?.[0].pos;
       const newSignPos = updateData.concat(dropData);
-      const xyPos = { pageNumber, pos: newSignPos };
-      setXyPosition((prev) => {
+      const xyPos = { pageNumber: targetPageNumber, pos: newSignPos };
+      recordWidgetUpdate((prev) => {
         const updated = [...prev];
         updated.splice(index, 1, xyPos);
         return updated;
       });
     } else {
-      const xyPos = { pageNumber: pageNumber, pos: dropData };
-      setXyPosition((prev) => [...prev, xyPos]);
+      const xyPos = { pageNumber: targetPageNumber, pos: dropData };
+      recordWidgetUpdate((prev) => [...prev, xyPos]);
     }
     if (dragTypeValue === "checkbox") {
       setIsCheckbox(true);
@@ -491,8 +513,7 @@ function SignYourSelf() {
       setFontSize(12);
       setFontColor("black");
     }
-    dispatch(setIsShowModal({ [key]: true }));
-    setCurrWidgetsDetails({ ...dropObj, pageNumber: pageNumber });
+    setCurrWidgetsDetails({ ...dropObj, pageNumber: targetPageNumber });
   };
 
   //`handleResend` function is used to resend otp for email verification
@@ -643,7 +664,8 @@ function SignYourSelf() {
         widgetKey,
         tourPageNumber;
       try {
-        const isSignatureExist = xyPosition?.some((p) =>
+        let isQesDocument = false;
+        let isSignatureExist = xyPosition?.some((p) =>
           p?.pos?.some((x) => x?.type === "signature")
         );
         if (!isSignatureExist) {
@@ -657,7 +679,7 @@ function SignYourSelf() {
 
         for (let i = 0; i < xyPosition?.length; i++) {
           tourPageNumber = xyPosition[i]?.pageNumber;
-          const requiredWidgets = xyPosition[i].pos.filter(
+          let requiredWidgets = xyPosition[i].pos.filter(
             (position) => position.type !== "checkbox"
           );
           if (requiredWidgets && requiredWidgets?.length > 0) {
@@ -860,7 +882,7 @@ function SignYourSelf() {
             }
             return obj;
           });
-          setXyPosition(newUpdateUrl);
+          recordWidgetUpdate(newUpdateUrl);
         }
       }
     }
@@ -925,16 +947,16 @@ function SignYourSelf() {
         return obj;
       });
 
-      setXyPosition(newUpdatePos);
+      recordWidgetUpdate(newUpdatePos);
     } else {
       const getRemainPage = xyPosition.filter(
         (data) => data.pageNumber !== effectivePageNumber
       );
 
       if (getRemainPage && getRemainPage.length > 0) {
-        setXyPosition(getRemainPage);
+        recordWidgetUpdate(getRemainPage);
       } else {
-        setXyPosition([]);
+        recordWidgetUpdate([]);
       }
     }
   };
@@ -986,32 +1008,16 @@ function SignYourSelf() {
     setSignTour(false);
     setIsDontShow(true);
     if (!checkTourStatus && isDontShow) {
-      let updatedTourStatus = [];
-      if (tourStatus.length > 0) {
-        updatedTourStatus = [...tourStatus];
-        const signyourselfIndex = tourStatus.findIndex(
-          (obj) => obj["signyourself"] === false || obj["signyourself"] === true
-        );
-        if (signyourselfIndex !== -1) {
-          updatedTourStatus[signyourselfIndex] = { signyourself: true };
-        } else {
-          updatedTourStatus.push({ signyourself: true });
-        }
-      } else {
-        updatedTourStatus = [{ signyourself: true }];
-      }
       try {
-        await axios.put(
-          `${localStorage.getItem("baseUrl")}classes/contracts${contractName}/${signerUserId}`,
-          { TourStatus: updatedTourStatus },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "X-Parse-Application-Id": localStorage.getItem("parseAppId"),
-              sessionToken: localStorage.getItem("accesstoken")
-            }
-          }
-        );
+        await saveTourStatus({
+          tourStatus,
+          key: "signyourself",
+          serverUrl: localStorage.getItem("baseUrl"),
+          appId: localStorage.getItem("parseAppId"),
+          sessionToken: localStorage.getItem("accesstoken"),
+          userId: signerUserId,
+          className: `contracts${contractName}`
+        });
       } catch (err) {
         console.log("axois err ", err);
         alert(t("something-went-wrong-mssg"));
@@ -1068,7 +1074,9 @@ function SignYourSelf() {
                 fontSize:
                   fontSize || currWidgetsDetails?.options?.fontSize || 12,
                 fontColor:
-                  fontColor || currWidgetsDetails?.options?.fontColor || "black",
+                  fontColor ||
+                  currWidgetsDetails?.options?.fontColor ||
+                  "black",
               }
             };
           }
@@ -1214,6 +1222,26 @@ function SignYourSelf() {
     setIsCheckbox(false);
   };
 
+  const handleDeclineMssg = () => {
+    const user = pdfDetails[0]?.DeclineBy?.email;
+    const reason = pdfDetails[0]?.DeclineReason;
+    return (
+      <div>
+        {t("decline-alert-3")}
+        {user && (
+          <div className="mt-2">
+            <span className="font-medium">{t("decline-by")}</span> : {user}
+          </div>
+        )}
+        {reason && (
+          <div className="mt-2">
+            <span className="font-medium">{t("reason")}</span> : {reason}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const handleCellsSettingSave = (data) => {
     // ensure font and color are updated before applying widget changes
     if (data?.fontSize !== undefined) setFontSize(data.fontSize);
@@ -1307,7 +1335,7 @@ function SignYourSelf() {
               />
             </div>
           )}
-          <div className="relative op-card overflow-hidden flex flex-col md:flex-row justify-between bg-base-300">
+          <div className="os-editor-artboard relative op-card overflow-hidden flex flex-col md:flex-row justify-between bg-base-300">
             {isUiLoading && (
               <div className="absolute h-full w-full z-[999] flex flex-col justify-center items-center bg-[#e6f2f2]/80">
                 <Loader />
@@ -1326,6 +1354,11 @@ function SignYourSelf() {
                 handleResend={handleResend}
               />
             )}
+            <PdfDeclineModal
+              show={isDeclined}
+              headMsg={t("document-declined")}
+              bodyMssg={handleDeclineMssg()}
+            />
             {/* this component used for UI interaction and show their functionality */}
             {pdfLoad && !isCompleted && (
               <Tour
@@ -1358,7 +1391,7 @@ function SignYourSelf() {
               isMergePdfBtn={!pdfDetails?.[0]?.IsCompleted}
               pdfDetails={pdfDetails}
             />
-            <div className="w-full md:w-[57%] flex mr-4">
+            <div className="os-pdf-stage w-full md:w-[57%] flex mr-4">
               <PdfTools
                 clickOnZoomIn={clickOnZoomIn}
                 clickOnZoomOut={clickOnZoomOut}
@@ -1424,7 +1457,7 @@ function SignYourSelf() {
                   isPageCopy={isPageCopy}
                   setIsPageCopy={setIsPageCopy}
                   xyPosition={xyPosition}
-                  setXyPosition={setXyPosition}
+                  setXyPosition={recordWidgetUpdate}
                   allPages={allPages}
                   pageNumber={currWidgetsDetails?.pageNumber || pageNumber}
                   signKey={currWidgetsDetails?.key}
@@ -1442,6 +1475,7 @@ function SignYourSelf() {
                 />
                 {/* pdf header which contain funish back button */}
                 <Header
+                  widgetHistory={widgetHistory}
                   pageNumber={pageNumber}
                   allPages={allPages}
                   changePage={changePage}
@@ -1469,6 +1503,7 @@ function SignYourSelf() {
                 <div ref={divRef} data-tut="reactourSecond" className="h-fit">
                   {containerWH?.width && (
                     <RenderPdf
+                      isSignYourself={true}
                       pageNumber={pageNumber}
                       setPageNumber={setPageNumber}
                       pdfOriginalWH={pdfOriginalWH}
@@ -1488,7 +1523,7 @@ function SignYourSelf() {
                       pageDetails={pageDetails}
                       pdfLoad={pdfLoad}
                       setPdfLoad={setPdfLoad}
-                      setXyPosition={setXyPosition}
+                      setXyPosition={recordWidgetUpdate}
                       containerWH={containerWH}
                       setIsPageCopy={setIsPageCopy}
                       setIsCheckbox={setIsCheckbox}
@@ -1518,7 +1553,7 @@ function SignYourSelf() {
                 </div>
               </div>
             </div>
-            <div className="w-full md:w-[23%] bg-base-100 overflow-y-auto hide-scrollbar">
+            <div className="os-recipient-rail w-full md:w-[23%] bg-base-100 overflow-y-auto hide-scrollbar">
               <div className="max-h-screen">
                 {!isCompleted ? (
                   <WidgetComponent

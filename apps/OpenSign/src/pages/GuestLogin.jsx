@@ -1,4 +1,4 @@
-import { BRAND_NAME } from "../constant/brand";
+import { getRuntimeConfig } from "../constant/runtimeConfig";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import axios from "axios";
@@ -84,7 +84,7 @@ function GuestLogin() {
     localStorage.setItem("favicon", favicon);
     localStorage.setItem(
       "appname",
-        BRAND_NAME
+        getRuntimeConfig().productName
     );
     //save isGuestSigner true in local to handle login flow header in mobile view
     localStorage.setItem("isGuestSigner", true);

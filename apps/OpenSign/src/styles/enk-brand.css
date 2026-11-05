@@ -1,0 +1,10 @@
+/* White-label (ENK): upstream's login screen hardcodes OpenSign blue (index.css).
+   For custom brands (data-brand set by applyDeploymentBranding) use the theme's primary colour. */
+html[data-brand]:not([data-brand="opensign"]) .os-login-actions .op-btn-primary {
+  background: oklch(var(--p));
+  color: oklch(var(--pc));
+}
+
+html[data-brand]:not([data-brand="opensign"]) .os-login-rail {
+  background: oklch(var(--p));
+}

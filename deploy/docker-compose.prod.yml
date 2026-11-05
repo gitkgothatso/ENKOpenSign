@@ -34,8 +34,15 @@ services:
       PARSE_MOUNT: /app
       SERVER_URL: ${PUBLIC_URL:?PUBLIC_URL must be set in .env}/api/app
       PUBLIC_URL: ${PUBLIC_URL}
-      APP_NAME: ${BRAND_NAME:-}
       EMAIL_TEMPLATES_DIR: /config/email
+      # Upstream white-label settings (apps/OpenSignServer/utils/brandContext.js).
+      # A brand key other than "opensign" drops OpenSign's default contacts and logo.
+      APP_BRAND_KEY: ${BRAND_KEY:?BRAND_KEY must be set in .env}
+      APP_NAME: ${BRAND_NAME:-}
+      APP_CANONICAL_URL: ${PUBLIC_URL}
+      APP_EMAIL_LOGO_URL: ${EMAIL_LOGO_URL:-}
+      APP_SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
+      APP_COMPLAINTS_EMAIL: ${COMPLAINTS_EMAIL:-}
     volumes:
       # Uploaded documents (local storage). Mounted on files/files so the
       # image's built-in files (fonts, default templates) stay visible.
@@ -58,13 +65,10 @@ services:
     # Only public, non-secret values: they are served to browsers via /env.js.
     environment:
       REACT_APP_SERVERURL: ${PUBLIC_URL}/api/app
-      REACT_APP_BRAND_NAME: ${BRAND_NAME:-}
-      REACT_APP_BRAND_LOGO_URL: ${BRAND_LOGO_URL:-}
-      REACT_APP_BRAND_FAVICON_URL: ${BRAND_FAVICON_URL:-}
-      REACT_APP_EMAIL_LOGO_URL: ${EMAIL_LOGO_URL:-}
-      REACT_APP_SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
-      REACT_APP_HIDE_SOCIAL: ${HIDE_SOCIAL:-true}
-      REACT_APP_SOURCE_URL: ${SOURCE_URL:-https://github.com/gitkgothatso/ENKOpenSign}
+      # Upstream runtime config (apps/OpenSign/src/constant/runtimeConfig.js), generated
+      # into .env by `bin/enk-sign up` from BRAND_* settings and config/brand/theme.json.
+      APP_BRAND_KEY: ${BRAND_KEY:?BRAND_KEY must be set in .env}
+      APP_RUNTIME_CONFIG_BASE64: ${APP_RUNTIME_CONFIG_BASE64:?run bin/enk-sign up to generate the runtime config}
     volumes:
       - ./config/brand:/config/brand:ro
     healthcheck:

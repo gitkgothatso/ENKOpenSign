@@ -33,16 +33,71 @@ env_set() {
 
 require_env() { [[ -f $ENV_FILE ]] || die "no $ENV_FILE yet; run: $0 init"; }
 
-server_image() { echo "$(env_get ENK_REGISTRY | sed 's#^$#ghcr.io/gitkgothatso#')/enk-sign-server:$(env_get ENK_VERSION)"; }
+image_for() { echo "$(env_get ENK_REGISTRY | sed 's#^$#ghcr.io/gitkgothatso#')/enk-sign-$1:$(env_get ENK_VERSION)"; }
+server_image() { image_for server; }
+web_image() { image_for web; }
 
 check_config() {
   local missing=() key
-  for key in ENK_VERSION PUBLIC_URL SITE_ADDRESS MASTER_KEY PFX_BASE64 PASS_PHRASE; do
+  for key in ENK_VERSION PUBLIC_URL SITE_ADDRESS BRAND_KEY MASTER_KEY PFX_BASE64 PASS_PHRASE; do
     [[ -n "$(env_get "$key")" ]] || missing+=("$key")
   done
   ((${#missing[@]} == 0)) || die "set these in $ENV_FILE: ${missing[*]}"
   [[ "$(env_get PUBLIC_URL)" != "https://sign.example.com" ]] || die "PUBLIC_URL is still the example value"
   [[ "$(env_get PUBLIC_URL)" != */ ]] || die "PUBLIC_URL must not end with /"
+  [[ "$(env_get BRAND_KEY)" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || die "BRAND_KEY must be a slug like acme-sign"
+  [[ "$(env_get BRAND_KEY)" != opensign ]] || die "BRAND_KEY must not be 'opensign' (that enables OpenSign's hosted defaults and analytics)"
+}
+
+# MongoDB 8.0 exits on Linux 6.19 - 7.0.13 (SERVER-121912); warn early instead of a mongo crash loop.
+check_kernel() {
+  local k major minor patch
+  k=$(docker run --rm --entrypoint uname "$(server_image)" -r 2>/dev/null || uname -r)
+  IFS=. read -r major minor patch <<<"${k%%-*}"
+  patch=${patch%%[!0-9]*}
+  if (( major == 6 && minor >= 19 )) || (( major == 7 && minor == 0 && ${patch:-0} < 14 )); then
+    echo "warning: Docker runs on Linux $k; MongoDB 8.0 does not start on 6.19 - 7.0.13 (see README)" >&2
+  fi
+}
+
+# Builds the web app's runtime config (upstream schema, apps/OpenSign/src/constant/runtimeConfig.js)
+# from the BRAND_* settings, config/brand/theme.json and optional config/brand/runtime.json overrides,
+# using Node from the web image so the host needs no extra tools.
+render_runtime_config() {
+  docker image inspect "$(web_image)" >/dev/null 2>&1 || docker pull "$(web_image)"
+  local b64
+  b64=$(docker run --rm --entrypoint node -v "$DEPLOY_DIR/config/brand:/brand:ro" \
+    -e BRAND_KEY="$(env_get BRAND_KEY)" -e BRAND_NAME="$(env_get BRAND_NAME)" \
+    -e BRAND_LOGO_URL="$(env_get BRAND_LOGO_URL)" -e BRAND_FAVICON_URL="$(env_get BRAND_FAVICON_URL)" \
+    -e SUPPORT_EMAIL="$(env_get SUPPORT_EMAIL)" -e SOURCE_URL="$(env_get SOURCE_URL)" \
+    -e PUBLIC_URL="$(env_get PUBLIC_URL)" "$(web_image)" -e '
+const fs = require("node:fs");
+const e = process.env;
+const readJson = (f) => (fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : {});
+const merge = (a, b) => {
+  for (const [k, v] of Object.entries(b)) {
+    a[k] = v && typeof v === "object" && !Array.isArray(v) ? merge(a[k] || {}, v) : v;
+  }
+  return a;
+};
+const theme = readJson("/brand/theme.json");
+const config = {
+  schemaVersion: 1,
+  brandKey: e.BRAND_KEY,
+  productName: e.BRAND_NAME || e.BRAND_KEY,
+  assets: { logoUrl: e.BRAND_LOGO_URL || "", faviconUrl: e.BRAND_FAVICON_URL || "" },
+  theme: { light: theme.light || {}, dark: theme.dark || {}, emailAccent: theme.emailAccent || "" },
+  urls: {
+    app: e.PUBLIC_URL,
+    api: e.PUBLIC_URL + "/api/app",
+    github: e.SOURCE_URL || "https://github.com/gitkgothatso/ENKOpenSign",
+    support: e.SUPPORT_EMAIL ? "mailto:" + e.SUPPORT_EMAIL : "",
+  },
+};
+merge(config, readJson("/brand/runtime.json"));
+process.stdout.write(Buffer.from(JSON.stringify(config)).toString("base64"));
+') || die "could not build the runtime config (check config/brand/*.json)"
+  env_set APP_RUNTIME_CONFIG_BASE64 "$b64"
 }
 
 # Default email templates come from the server image the first time; edit them in config/email/ afterwards.
@@ -81,12 +136,12 @@ cmd_init() {
   rm -rf "$tmp"
 
   info "created $ENV_FILE with a new master key and a self-signed document signing certificate"
-  echo "Next: edit $ENV_FILE (PUBLIC_URL, SITE_ADDRESS, BRAND_NAME, email), add branding to config/brand/,"
+  echo "Next: edit $ENV_FILE (PUBLIC_URL, SITE_ADDRESS, BRAND_KEY, BRAND_NAME, email), add branding to config/brand/,"
   echo "      then run: $0 up && $0 create-admin"
 }
 
 cmd_up() {
-  require_env; check_config; ensure_templates
+  require_env; check_config; check_kernel; ensure_templates; render_runtime_config
   info "starting $(env_get ENK_VERSION)"
   "${COMPOSE[@]}" up -d --wait
   "${COMPOSE[@]}" ps

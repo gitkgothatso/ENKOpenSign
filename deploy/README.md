@@ -23,6 +23,9 @@ deploy/
 - Linux host with Docker Engine 24+ and the Compose plugin; `openssl`.
 - 2 vCPU, 4 GB RAM, 40 GB disk for a typical client (LibreOffice in the server image needs the memory).
 - Ports 80 and 443 reachable by users. For automatic certificates, a DNS record pointing at the host.
+- Linux kernel **not** in 6.19 – 7.0.13: MongoDB 8.0 refuses to start on those kernels
+  ([SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912), an rseq bug). LTS kernels such as
+  Ubuntu 24.04's 6.8, and 7.0.14+, are fine. Check with `uname -r`; Docker Desktop's VM kernel counts too.
 
 ## Install
 

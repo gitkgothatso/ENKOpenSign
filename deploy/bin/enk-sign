@@ -49,6 +49,17 @@ check_config() {
   [[ "$(env_get BRAND_KEY)" != opensign ]] || die "BRAND_KEY must not be 'opensign' (that enables OpenSign's hosted defaults and analytics)"
 }
 
+# MongoDB 8.0 exits on Linux 6.19 - 7.0.13 (SERVER-121912); warn early instead of a mongo crash loop.
+check_kernel() {
+  local k major minor patch
+  k=$(docker run --rm --entrypoint uname "$(server_image)" -r 2>/dev/null || uname -r)
+  IFS=. read -r major minor patch <<<"${k%%-*}"
+  patch=${patch%%[!0-9]*}
+  if (( major == 6 && minor >= 19 )) || (( major == 7 && minor == 0 && ${patch:-0} < 14 )); then
+    echo "warning: Docker runs on Linux $k; MongoDB 8.0 does not start on 6.19 - 7.0.13 (see README)" >&2
+  fi
+}
+
 # Builds the web app's runtime config (upstream schema, apps/OpenSign/src/constant/runtimeConfig.js)
 # from the BRAND_* settings, config/brand/theme.json and optional config/brand/runtime.json overrides,
 # using Node from the web image so the host needs no extra tools.
@@ -130,7 +141,7 @@ cmd_init() {
 }
 
 cmd_up() {
-  require_env; check_config; ensure_templates; render_runtime_config
+  require_env; check_config; check_kernel; ensure_templates; render_runtime_config
   info "starting $(env_get ENK_VERSION)"
   "${COMPOSE[@]}" up -d --wait
   "${COMPOSE[@]}" ps

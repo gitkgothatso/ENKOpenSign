@@ -33,7 +33,11 @@ env_set() {
 
 require_env() { [[ -f $ENV_FILE ]] || die "no $ENV_FILE yet; run: $0 init"; }
 
-image_for() { echo "$(env_get ENK_REGISTRY | sed 's#^$#ghcr.io/gitkgothatso#')/enk-sign-$1:$(env_get ENK_VERSION)"; }
+image_for() {
+  local registry
+  registry=$(env_get ENK_REGISTRY || true)
+  echo "${registry:-ghcr.io/gitkgothatso}/enk-sign-$1:$(env_get ENK_VERSION)"
+}
 server_image() { image_for server; }
 web_image() { image_for web; }
 

@@ -1,0 +1,42 @@
+/* White-label (ENK): icons come from self-hosted Font Awesome Free 6
+   (icons CC BY 4.0, fonts SIL OFL 1.1, code MIT; see @fortawesome/fontawesome-free/LICENSE.txt)
+   instead of the Font Awesome Pro kit OpenSign serves from its own CDN.
+   Pro-only styles fall back to Free's solid glyphs; where OpenSign's Pro CSS is loaded
+   (stock OpenSign brand) it comes later and takes precedence. */
+.fa-light,
+.fal,
+.fa-thin,
+.fat,
+.fa-duotone,
+.fad,
+.fa-sharp {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  display: var(--fa-display, inline-block);
+  font-style: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-rendering: auto;
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+}
+
+/* Pro-only icons used by the app: closest Free glyphs. */
+.fa-arrow-turn-left::before {
+  content: "\f0e2"; /* arrow-rotate-left */
+}
+.fa-arrow-turn-right::before {
+  content: "\f01e"; /* arrow-rotate-right */
+}
+.fa-lock-keyhole::before {
+  content: "\f023"; /* lock */
+}
+.fa-message-sms::before {
+  content: "\f7cd"; /* comment-sms */
+}
+.fa-shield-check::before {
+  content: "\f3ed"; /* shield-halved */
+}
+.fa-shield-exclamation::before {
+  content: "\f071"; /* triangle-exclamation */
+}

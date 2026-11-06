@@ -22,7 +22,7 @@ export default async function GenerateCertificate(docDetails) {
   const brand = resolveBrandContext({});
   const pdfDoc = await PDFDocument.create();
   // `fontBytes` is used to embed custom font in pdf
-  const fontBytes = fs.readFileSync(new URL('../../../font/times.ttf', import.meta.url));
+  const fontBytes = fs.readFileSync(new URL('../../../font/LiberationSerif-Regular.ttf', import.meta.url));
   pdfDoc.registerFontkit(fontkit);
   const timesRomanFont = await pdfDoc.embedFont(fontBytes, { subset: true });
   const naSignUrl = fs.readFileSync(new URL('../../../images/na_sign.png', import.meta.url));

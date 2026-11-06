@@ -89,7 +89,13 @@ const config = {
   schemaVersion: 1,
   brandKey: e.BRAND_KEY,
   productName: e.BRAND_NAME || e.BRAND_KEY,
-  assets: { logoUrl: e.BRAND_LOGO_URL || "", faviconUrl: e.BRAND_FAVICON_URL || "" },
+  assets: {
+    logoUrl: e.BRAND_LOGO_URL || "",
+    faviconUrl: e.BRAND_FAVICON_URL || "",
+    // Font embedded when finishing a signature; custom brands get no OpenSign CDN font upstream.
+    // Liberation Serif (SIL OFL) ships in the web image and is metric-compatible with Times New Roman.
+    pdfFontUrl: "/fonts/LiberationSerif-Regular.ttf",
+  },
   theme: { light: theme.light || {}, dark: theme.dark || {}, emailAccent: theme.emailAccent || "" },
   urls: {
     app: e.PUBLIC_URL,
@@ -99,7 +105,8 @@ const config = {
   },
 };
 merge(config, readJson("/brand/runtime.json"));
-process.stdout.write(Buffer.from(JSON.stringify(config)).toString("base64"));
+// The upstream entrypoint only accepts unpadded Base64URL.
+process.stdout.write(Buffer.from(JSON.stringify(config)).toString("base64url"));
 ') || die "could not build the runtime config (check config/brand/*.json)"
   env_set APP_RUNTIME_CONFIG_BASE64 "$b64"
 }

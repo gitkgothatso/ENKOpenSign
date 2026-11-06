@@ -105,7 +105,8 @@ const config = {
   },
 };
 merge(config, readJson("/brand/runtime.json"));
-process.stdout.write(Buffer.from(JSON.stringify(config)).toString("base64"));
+// The upstream entrypoint only accepts unpadded Base64URL.
+process.stdout.write(Buffer.from(JSON.stringify(config)).toString("base64url"));
 ') || die "could not build the runtime config (check config/brand/*.json)"
   env_set APP_RUNTIME_CONFIG_BASE64 "$b64"
 }
